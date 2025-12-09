@@ -1,90 +1,96 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Воспоминания</title>
-  <style>
-    body {
-      background: #f5f5f5;
-      margin: 0;
-      padding: 0;
-      font-family: sans-serif;
-      color: #333;
-    }
-    header {
-      text-align: center;
-      padding: 2rem 0;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 2.5rem;
-    }
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 12px;
-      padding: 12px;
-      max-width: 1400px;
-      margin: auto;
-    }
-    .gallery-item {
-      position: relative;
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      cursor: pointer;
-    }
-    .gallery-item img,
-    .gallery-item video {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-    .gallery-item:hover img,
-    .gallery-item:hover video {
-      transform: scale(1.05);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Воспоминания</title>
+<style>
+  /* Основной стиль как на главной странице */
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to bottom, #fffbf0, #ffe6e6);
+    color: #333;
+  }
+  header {
+    text-align: center;
+    padding: 2rem 0;
+  }
+  header h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #ff4d6d;
+  }
 
-    /* Модальное окно */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85);
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+  /* Сетка галереи */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 10px;
+  }
+  .gallery-item {
+    position: relative;
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .gallery-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  }
+  .gallery-item img,
+  .gallery-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Модальное окно */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .modal-content {
+    max-width: 90%;
+    max-height: 90%;
+  }
+  .modal-content img,
+  .modal-content video {
+    width: 100%;
+    height: auto;
+  }
+  .modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 2rem;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* Адаптив */
+  @media (max-width: 600px) {
+    .gallery {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
     }
-    .modal-content {
-      max-width: 90%;
-      max-height: 90%;
-    }
-    .modal-content img,
-    .modal-content video {
-      width: 100%;
-      height: auto;
-    }
-    .modal-close {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 2rem;
-      color: #fff;
-      cursor: pointer;
-    }
-    @media (max-width: 600px) {
-      .gallery {
-        gap: 8px;
-        padding: 8px;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
 
@@ -93,15 +99,13 @@
 </header>
 
 <div class="gallery">
-  <!-- пример: для 42 фото / 41 видео — просто добавь все элементы -->
-  <!-- фото -->
+  <!-- Примеры фото -->
   <div class="gallery-item"><img src="photos/photo1.jpg" alt="Фото 1"></div>
   <div class="gallery-item"><img src="photos/photo2.jpg" alt="Фото 2"></div>
-  <!-- ... -->
-  <!-- видео (превью без звука) -->
+  <!-- Примеры видео -->
   <div class="gallery-item"><video src="videos/video1.mp4" muted preload="metadata"></video></div>
   <div class="gallery-item"><video src="videos/video2.mp4" muted preload="metadata"></video></div>
-  <!-- ... -->
+  <!-- Добавь остальные 42 фото и 41 видео аналогично -->
 </div>
 
 <!-- Модальное окно -->
@@ -124,7 +128,7 @@
         media.autoplay = true;
       }
       modalContent.innerHTML = '';
-      modalContent.append(media);
+      modalContent.appendChild(media);
       modal.style.display = 'flex';
     });
   });
@@ -135,7 +139,7 @@
   });
 
   window.addEventListener('click', e => {
-    if (e.target === modal) {
+    if(e.target === modal){
       modal.style.display = 'none';
       modalContent.innerHTML = '';
     }
