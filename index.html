@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Love Site — Blue Edition</title>
+    <title>Наши воспоминания</title>
     <style>
         body {
             margin: 0;
@@ -12,78 +12,78 @@
             background: linear-gradient(180deg, #0a1f3f, #1e3d7b, #4fa3ff);
             color: white;
             text-align: center;
-            overflow-x: hidden;
         }
 
         header {
-            padding: 40px 20px;
-            font-size: 32px;
+            padding: 30px 20px;
+            font-size: 28px;
             font-weight: bold;
-            letter-spacing: 2px;
         }
 
-        .video-container {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
-        }
-
-        video {
-            width: 100%;
-        }
-
-        .text-block {
-            margin-top: 30px;
-            font-size: 20px;
-            padding: 0 20px;
-            line-height: 1.5;
-        }
-
-        .memories-btn {
-            margin-top: 35px;
-            display: inline-block;
-            padding: 14px 26px;
+        .memory-block {
             background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            margin: 20px auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 14px;
             backdrop-filter: blur(6px);
+            box-shadow: 0 0 15px rgba(0,0,0,0.25);
+        }
+
+        .memory-block img {
+            width: 100%;
             border-radius: 12px;
-            font-size: 18px;
-            color: white;
+            margin-top: 10px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 22px;
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 12px;
             text-decoration: none;
+            color: white;
+            font-size: 18px;
             transition: 0.3s;
         }
 
-        .memories-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
+        .back-btn:hover {
             transform: scale(1.05);
+            background: rgba(255,255,255,0.25);
         }
 
         footer {
-            margin-top: 50px;
+            margin-top: 40px;
             padding: 20px;
-            font-size: 14px;
             opacity: 0.7;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <header>Дубаянец  👺</header>
 
-    <div class="video-container">
-        <video autoplay loop muted playsinline>
-            <source src="video.mp4" type="video/mp4" />
-        </video>
-    </div>
+<header>Наши воспоминания 💙</header>
 
-    <div class="text-block">
-        Ты — лось. Это для тебя 💙
-    </div>
+<div class="memory-block">
+    <p>Первое фото 💙</p>
+    <img src="photo1.jpg" alt="Фото 1">
+</div>
 
-    <a href="memories.html" class="memories-btn">Наши воспоминания</a>
+<div class="memory-block">
+    <p>Тут можно написать текст, историю или важный момент 💬</p>
+</div>
 
-    <footer>Сделано с любовью 💙</footer>
+<div class="memory-block">
+    <p>Второе фото 💙</p>
+    <img src="photo2.jpg" alt="Фото 2">
+</div>
+
+<a href="index.html" class="back-btn">Назад</a>
+
+<footer>С любовью 💙</footer>
+
 </body>
 </html>
