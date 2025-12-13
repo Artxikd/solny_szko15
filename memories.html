@@ -3,145 +3,174 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Наши воспоминания</title>
-
+<title>Воспоминания</title>
 <style>
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(180deg, #0a1f3f, #1e3d7b, #4fa3ff);
-  color: white;
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(180deg, #fffbf0, #ffe6e6);
+    color: #333;
+    text-align: center;
 }
 
 header {
-  text-align: center;
-  padding: 30px 20px;
+    padding: 2rem 0;
 }
 
 header h1 {
-  font-size: 32px;
-  margin-bottom: 15px;
+    font-size: 2.5rem;
+    margin: 0;
+    color: #ff4d6d;
 }
 
-.back {
-  color: #fff;
-  text-decoration: none;
-  opacity: .8;
-}
-
+/* Галерея */
 .gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
-  gap: 12px;
-  padding: 15px;
-  max-width: 1400px;
-  margin: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 10px;
 }
 
-.item {
-  border-radius: 14px;
-  overflow: hidden;
-  cursor: pointer;
-  box-shadow: 0 0 15px rgba(0,0,0,.4);
-  transition: .3s;
+.gallery-item {
+    position: relative;
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-.item:hover {
-  transform: scale(1.05);
+.gallery-item.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-.item img, .item video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.gallery-item img,
+.gallery-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
+/* Модальное окно */
 .modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.85);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
 }
 
 .modal-content {
-  max-width: 90%;
-  max-height: 90%;
+    max-width: 90%;
+    max-height: 90%;
 }
 
-.modal video, .modal img {
-  width: 100%;
-  height: auto;
+.modal-content img,
+.modal-content video {
+    width: 100%;
+    height: auto;
 }
 
-.close {
-  position: absolute;
-  top: 20px;
-  right: 25px;
-  font-size: 32px;
-  cursor: pointer;
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 2rem;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* Адаптив */
+@media (max-width: 600px) {
+    .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 8px;
+    }
 }
 </style>
 </head>
-
 <body>
 
 <header>
-  <h1>Наши воспоминания 💙</h1>
-  <a href="index.html" class="back">← назад</a>
+<h1>Наши воспоминания</h1>
 </header>
 
-<div class="gallery" id="gallery"></div>
+<div class="gallery">
+    <!-- Фото 1-16 -->
+    <div class="gallery-item"><img src="photos/photo1.jpg" alt="Фото 1"></div>
+    <div class="gallery-item"><img src="photos/photo2.jpg" alt="Фото 2"></div>
+    <div class="gallery-item"><img src="photos/photo3.jpg" alt="Фото 3"></div>
+    <div class="gallery-item"><img src="photos/photo4.jpg" alt="Фото 4"></div>
+    <div class="gallery-item"><img src="photos/photo5.jpg" alt="Фото 5"></div>
+    <div class="gallery-item"><img src="photos/photo6.jpg" alt="Фото 6"></div>
+    <div class="gallery-item"><img src="photos/photo7.jpg" alt="Фото 7"></div>
+    <div class="gallery-item"><img src="photos/photo8.jpg" alt="Фото 8"></div>
+    <div class="gallery-item"><img src="photos/photo9.jpg" alt="Фото 9"></div>
+    <div class="gallery-item"><img src="photos/photo10.jpg" alt="Фото 10"></div>
+    <div class="gallery-item"><img src="photos/photo11.jpg" alt="Фото 11"></div>
+    <div class="gallery-item"><img src="photos/photo12.jpg" alt="Фото 12"></div>
+    <div class="gallery-item"><img src="photos/photo13.jpg" alt="Фото 13"></div>
+    <div class="gallery-item"><img src="photos/photo14.jpg" alt="Фото 14"></div>
+    <div class="gallery-item"><img src="photos/photo15.jpg" alt="Фото 15"></div>
+    <div class="gallery-item"><img src="photos/photo16.jpg" alt="Фото 16"></div>
+</div>
 
+<!-- Модальное окно -->
 <div class="modal" id="modal">
-  <div class="close" id="close">&times;</div>
-  <div class="modal-content" id="content"></div>
+    <span class="modal-close" id="modalClose">&times;</span>
+    <div class="modal-content" id="modalContent"></div>
 </div>
 
 <script>
-const gallery = document.getElementById('gallery');
+const items = document.querySelectorAll('.gallery-item');
 const modal = document.getElementById('modal');
-const content = document.getElementById('content');
-const close = document.getElementById('close');
+const modalContent = document.getElementById('modalContent');
+const modalClose = document.getElementById('modalClose');
 
-/* НАСТРОЙКА */
-const photosCount = 42;
-const videosCount = 41;
-
-/* Фото */
-for(let i=1;i<=photosCount;i++){
-  gallery.innerHTML += `
-    <div class="item">
-      <img src="photos/photo${i}.jpg">
-    </div>`;
-}
-
-/* Видео */
-for(let i=1;i<=videosCount;i++){
-  gallery.innerHTML += `
-    <div class="item">
-      <video src="videos/video${i}.mp4" muted></video>
-    </div>`;
-}
-
-document.querySelectorAll('.item').forEach(item=>{
-  item.onclick = ()=>{
-    const media = item.firstElementChild.cloneNode(true);
-    if(media.tagName === 'VIDEO'){
-      media.controls = true;
-      media.autoplay = true;
-    }
-    content.innerHTML='';
-    content.appendChild(media);
-    modal.style.display='flex';
-  };
+// плавное появление
+items.forEach((item, index) => {
+    setTimeout(() => {
+        item.classList.add('visible');
+    }, index * 100);
 });
 
-close.onclick = ()=>{ modal.style.display='none'; content.innerHTML=''; };
-modal.onclick = e=>{ if(e.target===modal) close.onclick(); };
-</script>
+// клик по фото/видео
+items.forEach(item => {
+    item.addEventListener('click', () => {
+        const media = item.querySelector('img, video').cloneNode(true);
+        if(media.tagName.toLowerCase() === 'video'){
+            media.controls = true;
+            media.autoplay = true;
+        }
+        modalContent.innerHTML = '';
+        modalContent.appendChild(media);
+        modal.style.display = 'flex';
+    });
+});
 
+modalClose.addEventListener('click', () => {
+    modal.style.display = 'none';
+    modalContent.innerHTML = '';
+});
+
+window.addEventListener('click', e => {
+    if(e.target === modal){
+        modal.style.display = 'none';
+        modalContent.innerHTML = '';
+    }
+});
+</script>
 </body>
 </html>
