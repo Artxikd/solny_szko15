@@ -1,93 +1,103 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Love Site — Blue Edition</title>
-
 <style>
-:root {
-  --glass: rgba(255,255,255,0.15);
-  --border: rgba(255,255,255,0.3);
-}
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(180deg, #0a1f3f, #1e3d7b, #4fa3ff);
+        color: white;
+        text-align: center;
+        overflow-x: hidden;
+    }
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(180deg, #0a1f3f, #1e3d7b, #4fa3ff);
-  color: white;
-  text-align: center;
-}
+    header {
+        padding: 40px 20px;
+        font-size: 32px;
+        font-weight: bold;
+        letter-spacing: 2px;
+    }
 
-header {
-  padding: 40px 20px;
-  font-size: 32px;
-  font-weight: bold;
-  letter-spacing: 2px;
-}
+    .video-container {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0,0,0,0.4);
+        cursor: pointer;
+    }
 
-.video-container {
-  max-width: 500px;
-  margin: auto;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 0 25px rgba(0,0,0,.4);
-}
+    .video-container video {
+        width: 100%;
+        display: block;
+    }
 
-video {
-  width: 100%;
-  display: block;
-}
+    .text-block {
+        margin-top: 30px;
+        font-size: 20px;
+        padding: 0 20px;
+        line-height: 1.5;
+    }
 
-.text-block {
-  margin: 30px auto;
-  font-size: 20px;
-  max-width: 600px;
-  padding: 0 20px;
-}
+    .memories-btn {
+        margin-top: 35px;
+        display: inline-block;
+        padding: 14px 26px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(6px);
+        border-radius: 12px;
+        font-size: 18px;
+        color: white;
+        text-decoration: none;
+        transition: 0.3s;
+    }
 
-.btn {
-  display: inline-block;
-  padding: 14px 28px;
-  border-radius: 14px;
-  background: var(--glass);
-  border: 2px solid var(--border);
-  color: white;
-  text-decoration: none;
-  font-size: 18px;
-  transition: .3s;
-}
+    .memories-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: scale(1.05);
+    }
 
-.btn:hover {
-  background: rgba(255,255,255,0.25);
-  transform: scale(1.05);
-}
-
-footer {
-  margin: 50px 0 20px;
-  font-size: 14px;
-  opacity: .7;
-}
+    footer {
+        margin-top: 50px;
+        padding: 20px;
+        font-size: 14px;
+        opacity: 0.7;
+    }
 </style>
 </head>
-
 <body>
-
 <header>Дубаянец 👺</header>
 
-<div class="video-container">
-  <video autoplay loop muted playsinline>
-    <source src="video.mp4" type="video/mp4">
-  </video>
+<div class="video-container" onclick="playVideo()">
+    <video id="mainVideo" muted playsinline preload="metadata" poster="photos/photo1.jpg">
+        <source src="video.mp4" type="video/mp4" />
+    </video>
 </div>
 
 <div class="text-block">
-  Ты — лось. Это для тебя 💙
+    Ты — лось. Это для тебя 💙
 </div>
 
-<a href="memories.html" class="btn">Наши воспоминания 💙</a>
+<a href="memories.html" class="memories-btn">Наши воспоминания 💙</a>
 
 <footer>Сделано с любовью 💙</footer>
 
+<script>
+const video = document.getElementById('mainVideo');
+
+function playVideo() {
+    if(video.paused) {
+        video.play();
+    } else {
+        video.pause();
+    }
+}
+</script>
 </body>
 </html>
