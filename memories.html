@@ -15,24 +15,27 @@ body {
     text-align: center;
     overflow-x: hidden;
 }
+
 header {
     padding: 2rem 0;
 }
+
 header h1 {
     font-size: 2.5rem;
     margin: 0;
     letter-spacing: 2px;
 }
 
-/* галерея */
+/* Галерея */
 .gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 12px;
     max-width: 1400px;
     margin: 20px auto;
     padding: 0 10px;
 }
+
 .gallery-item {
     position: relative;
     background: rgba(255,255,255,0.15);
@@ -42,39 +45,47 @@ header h1 {
     cursor: pointer;
     opacity: 0;
     transform: translateY(20px);
-    transition: 0.5s ease;
+    transition: opacity 0.6s ease, transform 0.6s ease;
 }
+
 .gallery-item.visible {
     opacity: 1;
     transform: translateY(0);
 }
+
 .gallery-item img,
 .gallery-item video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
 }
 
-/* модал */
+/* Модалка */
 .modal {
     display: none;
     position: fixed;
     z-index: 1000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0,0,0,0.9);
     justify-content: center;
     align-items: center;
 }
+
 .modal-content {
     max-width: 90%;
     max-height: 90%;
 }
+
 .modal-content img,
 .modal-content video {
     width: 100%;
     height: auto;
 }
+
 .modal-close {
     position: absolute;
     top: 20px;
@@ -85,59 +96,91 @@ header h1 {
 }
 </style>
 </head>
+
 <body>
 
-<header><h1>Наши воспоминания</h1></header>
+<header>
+    <h1>Наши воспоминания</h1>
+</header>
 
-<div class="gallery">
-    <!-- фото -->
-    <div class="gallery-item"><img src="photos/photo1.jpg"></div>
-    <div class="gallery-item"><img src="photos/photo2.jpg"></div>
-    <div class="gallery-item"><img src="photos/photo3.jpg"></div>
+<!-- ✅ ЕДИНСТВЕННЫЙ БЛОК ГАЛЕРЕИ (ПУСТОЙ, ДЛЯ JSON) -->
+<div class="gallery" id="gallery"></div>
 
-    <!-- видео -->
-    <div class="gallery-item">
-        <video muted playsinline preload="metadata" poster="photos/photo3.jpg">
-            <source src="videos/video1.mp4" type="video/mp4">
-        </video>
-    </div>
-
-    <div class="gallery-item"><img src="photos/photo4.jpg"></div>
-    <div class="gallery-item"><img src="photos/photo5.jpg"></div>
-</div>
-
-<!-- модал -->
+<!-- Модальное окно -->
 <div class="modal" id="modal">
     <span class="modal-close" id="modalClose">&times;</span>
     <div class="modal-content" id="modalContent"></div>
 </div>
 
 <script>
-const items = document.querySelectorAll('.gallery-item');
+const gallery = document.getElementById('gallery');
 const modal = document.getElementById('modal');
 const modalContent = document.getElementById('modalContent');
 
-items.forEach((item, i) => {
-    setTimeout(() => item.classList.add('visible'), i*100);
-    item.onclick = () => {
-        const media = item.querySelector('img,video').cloneNode(true);
-        if(media.tagName==='VIDEO'){
-            media.controls=true;
-            media.autoplay=true;
+fetch('data/media.json')
+  .then(res => {
+    if (!res.ok) throw new Error('JSON not found');
+    return res.json();
+  })
+  .then(items => {
+    items.forEach((item, index) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'gallery-item';
+
+      let media;
+
+      if (item.type === 'image') {
+        media = document.createElement('img');
+        media.src = item.src;
+        media.loading = 'lazy';
+      }
+
+      if (item.type === 'video') {
+        media = document.createElement('video');
+        media.src = item.src;
+        media.poster = item.poster || '';
+        media.muted = true;
+        media.playsInline = true;
+        media.preload = 'metadata';
+      }
+
+      wrapper.appendChild(media);
+      gallery.appendChild(wrapper);
+
+      setTimeout(() => {
+        wrapper.classList.add('visible');
+      }, index * 80);
+
+      wrapper.onclick = () => {
+        const clone = media.cloneNode(true);
+        if (clone.tagName === 'VIDEO') {
+          clone.controls = true;
+          clone.autoplay = true;
+          clone.muted = false;
         }
-        modalContent.innerHTML='';
-        modalContent.appendChild(media);
-        modal.style.display='flex';
-    }
-});
+        modalContent.innerHTML = '';
+        modalContent.appendChild(clone);
+        modal.style.display = 'flex';
+      };
+    });
+  })
+  .catch(err => {
+    console.error(err);
+    gallery.innerHTML = '<p>Ошибка загрузки воспоминаний 💔</p>';
+  });
 
 document.getElementById('modalClose').onclick = () => {
-    const v = modalContent.querySelector('video');
-    if(v) v.pause();
-    modal.style.display='none';
-    modalContent.innerHTML='';
+  const v = modalContent.querySelector('video');
+  if (v) v.pause();
+  modal.style.display = 'none';
+  modalContent.innerHTML = '';
 };
-modal.onclick = e => { if(e.target===modal) modalClose.onclick(); };
+
+modal.onclick = e => {
+  if (e.target === modal) {
+    document.getElementById('modalClose').onclick();
+  }
+};
 </script>
 
 </body>
