@@ -3,131 +3,110 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Воспоминания</title>
+<title>Наши воспоминания</title>
+
 <style>
 body {
     margin: 0;
     padding: 0;
     font-family: 'Arial', sans-serif;
-    background: linear-gradient(180deg, #fffbf0, #ffe6e6);
-    color: #333;
+    background: linear-gradient(180deg, #0a1f3f, #1e3d7b, #4fa3ff);
+    color: white;
     text-align: center;
+    overflow-x: hidden;
 }
-
 header {
     padding: 2rem 0;
 }
-
 header h1 {
     font-size: 2.5rem;
     margin: 0;
-    color: #ff4d6d;
+    letter-spacing: 2px;
 }
 
-/* Галерея */
+/* галерея */
 .gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
     gap: 12px;
     max-width: 1400px;
     margin: 20px auto;
     padding: 0 10px;
 }
-
 .gallery-item {
     position: relative;
-    background: #fff;
+    background: rgba(255,255,255,0.15);
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     cursor: pointer;
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+    transition: 0.5s ease;
 }
-
 .gallery-item.visible {
     opacity: 1;
     transform: translateY(0);
 }
-
 .gallery-item img,
 .gallery-item video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
 }
 
-/* Модальное окно */
+/* модал */
 .modal {
     display: none;
     position: fixed;
     z-index: 1000;
     left: 0; top: 0;
     width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.9);
     justify-content: center;
     align-items: center;
-    padding: 20px;
 }
-
 .modal-content {
     max-width: 90%;
     max-height: 90%;
 }
-
 .modal-content img,
 .modal-content video {
     width: 100%;
     height: auto;
 }
-
 .modal-close {
     position: absolute;
     top: 20px;
     right: 20px;
     font-size: 2rem;
-    color: #fff;
+    color: white;
     cursor: pointer;
-}
-
-/* Адаптив */
-@media (max-width: 600px) {
-    .gallery {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 8px;
-    }
 }
 </style>
 </head>
 <body>
 
-<header>
-<h1>Наши воспоминания</h1>
-</header>
+<header><h1>Наши воспоминания</h1></header>
 
 <div class="gallery">
-    <!-- Фото 1-16 -->
-    <div class="gallery-item"><img src="photos/photo1.jpg" alt="Фото 1"></div>
-    <div class="gallery-item"><img src="photos/photo2.jpg" alt="Фото 2"></div>
-    <div class="gallery-item"><img src="photos/photo3.jpg" alt="Фото 3"></div>
-    <div class="gallery-item"><img src="photos/photo4.jpg" alt="Фото 4"></div>
-    <div class="gallery-item"><img src="photos/photo5.jpg" alt="Фото 5"></div>
-    <div class="gallery-item"><img src="photos/photo6.jpg" alt="Фото 6"></div>
-    <div class="gallery-item"><img src="photos/photo7.jpg" alt="Фото 7"></div>
-    <div class="gallery-item"><img src="photos/photo8.jpg" alt="Фото 8"></div>
-    <div class="gallery-item"><img src="photos/photo9.jpg" alt="Фото 9"></div>
-    <div class="gallery-item"><img src="photos/photo10.jpg" alt="Фото 10"></div>
-    <div class="gallery-item"><img src="photos/photo11.jpg" alt="Фото 11"></div>
-    <div class="gallery-item"><img src="photos/photo12.jpg" alt="Фото 12"></div>
-    <div class="gallery-item"><img src="photos/photo13.jpg" alt="Фото 13"></div>
-    <div class="gallery-item"><img src="photos/photo14.jpg" alt="Фото 14"></div>
-    <div class="gallery-item"><img src="photos/photo15.jpg" alt="Фото 15"></div>
-    <div class="gallery-item"><img src="photos/photo16.jpg" alt="Фото 16"></div>
+    <!-- фото -->
+    <div class="gallery-item"><img src="photos/photo1.jpg"></div>
+    <div class="gallery-item"><img src="photos/photo2.jpg"></div>
+    <div class="gallery-item"><img src="photos/photo3.jpg"></div>
+
+    <!-- видео -->
+    <div class="gallery-item">
+        <video muted playsinline preload="metadata" poster="photos/photo3.jpg">
+            <source src="videos/video1.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div class="gallery-item"><img src="photos/photo4.jpg"></div>
+    <div class="gallery-item"><img src="photos/photo5.jpg"></div>
 </div>
 
-<!-- Модальное окно -->
+<!-- модал -->
 <div class="modal" id="modal">
     <span class="modal-close" id="modalClose">&times;</span>
     <div class="modal-content" id="modalContent"></div>
@@ -137,40 +116,29 @@ header h1 {
 const items = document.querySelectorAll('.gallery-item');
 const modal = document.getElementById('modal');
 const modalContent = document.getElementById('modalContent');
-const modalClose = document.getElementById('modalClose');
 
-// плавное появление
-items.forEach((item, index) => {
-    setTimeout(() => {
-        item.classList.add('visible');
-    }, index * 100);
-});
-
-// клик по фото/видео
-items.forEach(item => {
-    item.addEventListener('click', () => {
-        const media = item.querySelector('img, video').cloneNode(true);
-        if(media.tagName.toLowerCase() === 'video'){
-            media.controls = true;
-            media.autoplay = true;
+items.forEach((item, i) => {
+    setTimeout(() => item.classList.add('visible'), i*100);
+    item.onclick = () => {
+        const media = item.querySelector('img,video').cloneNode(true);
+        if(media.tagName==='VIDEO'){
+            media.controls=true;
+            media.autoplay=true;
         }
-        modalContent.innerHTML = '';
+        modalContent.innerHTML='';
         modalContent.appendChild(media);
-        modal.style.display = 'flex';
-    });
-});
-
-modalClose.addEventListener('click', () => {
-    modal.style.display = 'none';
-    modalContent.innerHTML = '';
-});
-
-window.addEventListener('click', e => {
-    if(e.target === modal){
-        modal.style.display = 'none';
-        modalContent.innerHTML = '';
+        modal.style.display='flex';
     }
 });
+
+document.getElementById('modalClose').onclick = () => {
+    const v = modalContent.querySelector('video');
+    if(v) v.pause();
+    modal.style.display='none';
+    modalContent.innerHTML='';
+};
+modal.onclick = e => { if(e.target===modal) modalClose.onclick(); };
 </script>
+
 </body>
 </html>
