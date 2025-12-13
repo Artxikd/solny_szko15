@@ -15,10 +15,25 @@
   { "type": "image", "src": "photos/photo14.jpg" },
   { "type": "image", "src": "photos/photo15.jpg" },
   { "type": "image", "src": "photos/photo16.jpg" },
-
+  
   {
-    "type": "video",
-    "src": "videos/video1.mp4",
-    "poster": "photos/preview1.jpg"
-  }
+  { "type": "video", "src": "videos/video1.mp4", "poster": "photos/preview1.jpg" },
+  { "type": "video", "src": "videos/video2.mp4", "poster": "photos/preview2.jpg" },
+  { "type": "video", "src": "videos/video3.mp4", "poster": "photos/preview3.jpg" },
+  { "type": "video", "src": "videos/video4.mp4", "poster": "photos/preview4.jpg" },
+  { "type": "video", "src": "videos/video5.mp4", "poster": "photos/preview5.jpg" },
+  { "type": "video", "src": "videos/video6.mp4", "poster": "photos/preview6.jpg" },
+  { "type": "video", "src": "videos/video7.mp4", "poster": "photos/preview7.jpg" },
+  { "type": "video", "src": "videos/video8.mp4", "poster": "photos/preview8.jpg" },
+  { "type": "video", "src": "videos/video9.mp4", "poster": "photos/preview9.jpg" },
+  { "type": "video", "src": "videos/video10.mp4", "poster": "photos/preview10.jpg" },
+  { "type": "video", "src": "videos/video11.mp4", "poster": "photos/preview11.jpg" },
+  { "type": "video", "src": "videos/video12.mp4", "poster": "photos/preview12.jpg" },
+  { "type": "video", "src": "videos/video13.mp4", "poster": "photos/preview13.jpg" },
+  { "type": "video", "src": "videos/video14.mp4", "poster": "photos/preview14.jpg" },
+  { "type": "video", "src": "videos/video15.mp4", "poster": "photos/preview15.jpg" },
+  { "type": "video", "src": "videos/video16.mp4", "poster": "photos/preview16.jpg" },
+  { "type": "video", "src": "videos/video17.mp4", "poster": "photos/preview17.jpg" },
+  { "type": "video", "src": "videos/video18.mp4", "poster": "photos/preview18.jpg" },
+  { "type": "video", "src": "videos/video19.mp4", "poster": "photos/preview19.jpg" }
 ]
