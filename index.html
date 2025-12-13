@@ -1,82 +1,108 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Love Site — Blue Edition</title>
+
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Arial', sans-serif;
-        background: linear-gradient(180deg, #0a1f3f, #1e3d7b, #4fa3ff);
-        color: white;
-        text-align: center;
-        overflow-x: hidden;
-    }
+/* общий стиль */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(180deg, #0a1f3f, #1e3d7b, #4fa3ff);
+    color: white;
+    text-align: center;
+    overflow-x: hidden;
+    position: relative;
+}
 
-    header {
-        padding: 40px 20px;
-        font-size: 32px;
-        font-weight: bold;
-        letter-spacing: 2px;
-    }
+/* сердце при клике */
+.heart {
+    position: fixed;
+    font-size: 20px;
+    animation: fly 2s ease-out forwards;
+    pointer-events: none;
+}
+@keyframes fly {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-120px) scale(1.6); opacity: 0; }
+}
 
-    .video-container {
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 0 20px rgba(0,0,0,0.4);
-        cursor: pointer;
-    }
+header {
+    padding: 40px 20px;
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
 
-    .video-container video {
-        width: 100%;
-        display: block;
-    }
+/* видео */
+.video-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    cursor: pointer;
+}
+.video-container video {
+    width: 100%;
+    display: block;
+    border-radius: 12px;
+}
 
-    .text-block {
-        margin-top: 30px;
-        font-size: 20px;
-        padding: 0 20px;
-        line-height: 1.5;
-    }
+/* текст */
+.text-block {
+    margin-top: 30px;
+    font-size: 20px;
+    padding: 0 20px;
+    line-height: 1.5;
+}
 
-    .memories-btn {
-        margin-top: 35px;
-        display: inline-block;
-        padding: 14px 26px;
-        background: rgba(255, 255, 255, 0.15);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        backdrop-filter: blur(6px);
-        border-radius: 12px;
-        font-size: 18px;
-        color: white;
-        text-decoration: none;
-        transition: 0.3s;
-    }
+/* кнопка */
+.memories-btn {
+    margin-top: 35px;
+    display: inline-block;
+    padding: 14px 26px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(6px);
+    border-radius: 12px;
+    font-size: 18px;
+    color: white;
+    text-decoration: none;
+    transition: 0.3s;
+}
+.memories-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+}
 
-    .memories-btn:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: scale(1.05);
-    }
+/* таймер */
+#timer {
+    margin-top: 15px;
+    font-size: 18px;
+    opacity: 0.85;
+}
 
-    footer {
-        margin-top: 50px;
-        padding: 20px;
-        font-size: 14px;
-        opacity: 0.7;
-    }
+footer {
+    margin-top: 50px;
+    padding: 20px;
+    font-size: 14px;
+    opacity: 0.7;
+}
 </style>
 </head>
 <body>
+
 <header>Дубаянец 👺</header>
 
+<!-- Видео с тапом -->
 <div class="video-container" onclick="playVideo()">
     <video id="mainVideo" muted playsinline preload="metadata" poster="photos/photo1.jpg">
-        <source src="video.mp4" type="video/mp4" />
+        <source src="video.mp4" type="video/mp4">
     </video>
 </div>
 
@@ -84,20 +110,44 @@
     Ты — лось. Это для тебя 💙
 </div>
 
+<div id="timer"></div>
+
 <a href="memories.html" class="memories-btn">Наши воспоминания 💙</a>
 
 <footer>Сделано с любовью 💙</footer>
 
 <script>
+// видео
 const video = document.getElementById('mainVideo');
-
-function playVideo() {
-    if(video.paused) {
-        video.play();
-    } else {
-        video.pause();
-    }
+function playVideo(){
+    if(navigator.vibrate) navigator.vibrate(40);
+    video.paused ? video.play() : video.pause();
 }
+
+// сердца по клику
+document.addEventListener('click', e => {
+    const heart = document.createElement('div');
+    heart.className = 'heart';
+    heart.textContent = '💙';
+    heart.style.left = (e.clientX - 10) + 'px';
+    heart.style.top = (e.clientY - 10) + 'px';
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 2000);
+});
+
+// таймер отношений
+const startDate = new Date('2024-10-13T00:00:00');
+function updateTimer(){
+    const now = new Date();
+    const diff = now - startDate;
+    const days = Math.floor(diff / (1000*60*60*24));
+    const hours = Math.floor(diff / (1000*60*60)) % 24;
+    document.getElementById('timer').textContent =
+        `Мы вместе уже ${days} дней ${hours} часов 💙`;
+}
+setInterval(updateTimer, 60000);
+updateTimer();
 </script>
+
 </body>
 </html>
