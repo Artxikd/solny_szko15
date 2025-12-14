@@ -6,7 +6,6 @@
 <title>Love Site — Blue Edition</title>
 
 <style>
-/* общий стиль */
 body {
     margin: 0;
     padding: 0;
@@ -18,26 +17,7 @@ body {
     position: relative;
 }
 
-/* сердце при клике */
-.heart {
-    position: fixed;
-    font-size: 20px;
-    animation: fly 2s ease-out forwards;
-    pointer-events: none;
-}
-@keyframes fly {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-120px) scale(1.6); opacity: 0; }
-}
-
-header {
-    padding: 40px 20px;
-    font-size: 32px;
-    font-weight: bold;
-    letter-spacing: 2px;
-}
-
-/* видео */
+/* Видео */
 .video-container {
     width: 100%;
     max-width: 500px;
@@ -53,21 +33,13 @@ header {
     border-radius: 12px;
 }
 
-/* текст */
-.text-block {
-    margin-top: 30px;
-    font-size: 20px;
-    padding: 0 20px;
-    line-height: 1.5;
-}
-
-/* кнопка */
+/* Кнопка воспоминаний */
 .memories-btn {
     margin-top: 35px;
     display: inline-block;
     padding: 14px 26px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
     backdrop-filter: blur(6px);
     border-radius: 12px;
     font-size: 18px;
@@ -76,11 +48,37 @@ header {
     transition: 0.3s;
 }
 .memories-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255,255,255,0.25);
     transform: scale(1.05);
 }
 
-/* таймер */
+/* Сердечки по клику */
+.heart {
+    position: fixed;
+    font-size: 20px;
+    animation: fly 2s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes fly {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-120px) scale(1.6); opacity: 0; }
+}
+
+/* Игра "Лови сердечки" */
+.heart-game {
+    position: absolute;
+    font-size: 24px;
+    pointer-events: auto;
+    user-select: none;
+    animation: fall 3s linear forwards;
+}
+@keyframes fall {
+    0% { top: -30px; opacity: 1; }
+    100% { top: 100vh; opacity: 0; }
+}
+
+/* Таймер */
 #timer {
     margin-top: 15px;
     font-size: 18px;
@@ -99,15 +97,10 @@ footer {
 
 <header>Дубаянец 👺</header>
 
-<!-- Видео с тапом -->
 <div class="video-container" onclick="playVideo()">
     <video id="mainVideo" muted playsinline preload="metadata" poster="photos/photo1.jpg">
         <source src="video.mp4" type="video/mp4">
     </video>
-</div>
-
-<div class="text-block">
-    Ты — лось. Это для тебя 💙
 </div>
 
 <div id="timer"></div>
@@ -117,14 +110,14 @@ footer {
 <footer>Сделано с любовью 💙</footer>
 
 <script>
-// видео
+// Видео
 const video = document.getElementById('mainVideo');
 function playVideo(){
     if(navigator.vibrate) navigator.vibrate(40);
     video.paused ? video.play() : video.pause();
 }
 
-// сердца по клику
+// Сердечки при клике
 document.addEventListener('click', e => {
     const heart = document.createElement('div');
     heart.className = 'heart';
@@ -135,7 +128,7 @@ document.addEventListener('click', e => {
     setTimeout(() => heart.remove(), 2000);
 });
 
-// таймер отношений
+// Таймер отношений
 const startDate = new Date('2024-10-13T00:00:00');
 function updateTimer(){
     const now = new Date();
@@ -147,6 +140,26 @@ function updateTimer(){
 }
 setInterval(updateTimer, 60000);
 updateTimer();
+
+// Игра "Лови сердечки"
+let score = 0;
+function spawnHeart(){
+    const heart = document.createElement('div');
+    heart.className = 'heart-game';
+    heart.textContent = '💙';
+    heart.style.left = Math.random() * window.innerWidth + 'px';
+    heart.style.top = '-30px';
+    document.body.appendChild(heart);
+
+    heart.onclick = () => {
+        score++;
+        heart.remove();
+        alert(`Собрано сердечек: ${score}`);
+    }
+
+    setTimeout(() => heart.remove(), 3000);
+}
+setInterval(spawnHeart, 1500); // каждую 1.5 секунды
 </script>
 
 </body>
