@@ -25,6 +25,14 @@ header h1 { font-size: 2.5rem; margin:0; letter-spacing:2px; }
 .like-btn { left:6px; }
 .comment-btn { right:6px; }
 
+/* Анимация лайка */
+@keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.5); } 100% { transform: scale(1); } }
+.pop { animation: pop 0.3s ease; }
+
+/* Анимация комментария */
+@keyframes commentPop { 0% { opacity:0; transform: translateY(10px); } 50% { opacity:1; transform: translateY(-5px); } 100% { opacity:0; transform: translateY(-15px); } }
+.comment-feedback { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.5); padding:4px 10px; border-radius:6px; font-size:14px; animation: commentPop 1s ease forwards; pointer-events:none; }
+
 /* Модалка */
 .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; overflow:hidden; }
 .modal-content { max-width:100%; max-height:100%; width:100%; height:100%; display:flex; justify-content:center; align-items:center; position:relative; transition:transform 0.4s ease; }
@@ -64,7 +72,7 @@ const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 let mediaItems=[], currentIndex=0;
 
-// Загрузка лайков и комментариев из localStorage
+// Лайки и комментарии
 let storedLikes = JSON.parse(localStorage.getItem('likes')||'{}');
 let storedComments = JSON.parse(localStorage.getItem('comments')||'{}');
 
@@ -83,29 +91,34 @@ fetch('data/media.json')
       wrapper.appendChild(media);
 
       // Лайк
-      const likeBtn=document.createElement('div');
-      likeBtn.className='like-btn';
-      likeBtn.textContent=`❤️ ${storedLikes[i]||0}`;
-      likeBtn.onclick=e=>{
+      const likeBtn = document.createElement('div');
+      likeBtn.className = 'like-btn';
+      likeBtn.textContent = `❤️ ${storedLikes[i]||0}`;
+      likeBtn.onclick = e=>{
         e.stopPropagation();
         storedLikes[i] = (storedLikes[i]||0)+1;
         localStorage.setItem('likes', JSON.stringify(storedLikes));
-        likeBtn.textContent=`❤️ ${storedLikes[i]}`;
+        likeBtn.textContent = `❤️ ${storedLikes[i]}`;
+        likeBtn.classList.remove('pop'); void likeBtn.offsetWidth; likeBtn.classList.add('pop');
       };
       wrapper.appendChild(likeBtn);
 
       // Комментарий
-      const commentBtn=document.createElement('div');
-      commentBtn.className='comment-btn';
-      commentBtn.textContent='💬';
-      commentBtn.onclick=e=>{
+      const commentBtn = document.createElement('div');
+      commentBtn.className = 'comment-btn';
+      commentBtn.textContent = '💬';
+      commentBtn.onclick = e=>{
         e.stopPropagation();
-        const c=prompt('Комментарий:');
+        const c = prompt('Комментарий:');
         if(c){
-          storedComments[i]=storedComments[i]||[];
+          storedComments[i] = storedComments[i]||[];
           storedComments[i].push(c);
           localStorage.setItem('comments', JSON.stringify(storedComments));
-          alert('Комментарий добавлен! Всего комментариев: '+storedComments[i].length);
+          const feedback = document.createElement('div');
+          feedback.className = 'comment-feedback';
+          feedback.textContent = 'Комментарий добавлен!';
+          wrapper.appendChild(feedback);
+          setTimeout(()=>feedback.remove(),1000);
         } else if(storedComments[i]?.length){
           alert('Комментарии:\n'+storedComments[i].join('\n'));
         }
@@ -131,7 +144,7 @@ function showModal(){
   modalContent.style.transform='translateX(0)';
 }
 
-// Навигация с анимацией
+// Навигация
 function slide(direction){
   modalContent.style.transition='transform 0.4s ease';
   modalContent.style.transform=`translateX(${direction*100}%)`;
@@ -139,7 +152,7 @@ function slide(direction){
     currentIndex=(currentIndex+direction+mediaItems.length)%mediaItems.length;
     showModal();
     modalContent.style.transition='none';
-  }, 400);
+  },400);
 }
 prevBtn.onclick=()=>slide(-1);
 nextBtn.onclick=()=>slide(1);
