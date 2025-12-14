@@ -14,6 +14,7 @@ body {
     color: white;
     text-align: center;
     overflow-x: hidden;
+    position: relative;
 }
 
 header {
@@ -61,7 +62,6 @@ header h1 {
     display: block;
 }
 
-/* Иконка воспроизведения для видео */
 .gallery-item.video::after {
     content: '▶';
     position: absolute;
@@ -72,6 +72,21 @@ header h1 {
     transform: translate(-50%, -50%);
     pointer-events: none;
 }
+
+/* Лайки и комментарии */
+.like-btn, .comment-btn {
+    position: absolute;
+    bottom: 8px;
+    font-size: 1.4rem;
+    background: rgba(0,0,0,0.3);
+    padding: 4px 8px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+}
+.like-btn { left: 8px; }
+.comment-btn { right: 8px; }
 
 /* Модалка */
 .modal {
@@ -99,7 +114,6 @@ header h1 {
     height: auto;
 }
 
-/* Кнопки навигации */
 .nav-btn {
     position: absolute;
     top: 50%;
@@ -113,11 +127,9 @@ header h1 {
     border-radius: 10px;
     user-select: none;
 }
-
 #prevBtn { left: 10px; }
 #nextBtn { right: 10px; }
 
-/* Закрытие */
 .modal-close {
     position: absolute;
     top: 20px;
@@ -143,9 +155,22 @@ header h1 {
 .back-btn:hover {
     background: rgba(255,255,255,0.25);
 }
+
+/* Сезонные эффекты */
+.falling {
+    position: absolute;
+    top: -30px;
+    font-size: 20px;
+    opacity: 0.8;
+    pointer-events: none;
+    animation: fall 8s linear infinite;
+}
+@keyframes fall {
+    0% { transform: translateY(-30px) rotate(0deg); }
+    100% { transform: translateY(110vh) rotate(360deg); }
+}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -156,7 +181,6 @@ header h1 {
 
 <div class="gallery" id="gallery"></div>
 
-<!-- Модалка -->
 <div class="modal" id="modal">
     <span class="modal-close" id="modalClose">&times;</span>
     <button class="nav-btn" id="prevBtn">&#10094;</button>
@@ -172,91 +196,124 @@ const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 let mediaItems = [];
 let currentIndex = 0;
+const likes = []; // для хранения лайков
 
+// Загрузка JSON
 fetch('data/media.json')
   .then(res => res.json())
   .then(items => {
     mediaItems = items;
-    items.forEach((item, index) => {
+    items.forEach((item,index)=>{
+      likes[index] = 0;
       const wrapper = document.createElement('div');
       wrapper.className = 'gallery-item';
-      if(item.type === 'video') wrapper.classList.add('video'); // добавляем класс для видео
+      if(item.type==='video') wrapper.classList.add('video');
 
       let media;
-      if(item.type === 'image'){
+      if(item.type==='image'){
         media = document.createElement('img');
-        media.src = item.src;
-        media.loading = 'lazy';
-      } else if(item.type === 'video'){
+        media.src=item.src;
+        media.loading='lazy';
+      } else {
         media = document.createElement('video');
-        media.src = item.src;
-        media.poster = item.poster || '';
-        media.muted = true;
-        media.playsInline = true;
-        media.preload = 'metadata';
+        media.src=item.src;
+        media.poster=item.poster||'';
+        media.muted=true;
+        media.playsInline=true;
+        media.preload='metadata';
       }
+
       wrapper.appendChild(media);
+
+      // Лайк кнопка
+      const likeBtn = document.createElement('div');
+      likeBtn.className = 'like-btn';
+      likeBtn.textContent = `❤️ ${likes[index]}`;
+      likeBtn.onclick = e=>{
+        e.stopPropagation();
+        likes[index]++;
+        likeBtn.textContent = `❤️ ${likes[index]}`;
+      }
+      wrapper.appendChild(likeBtn);
+
+      // Коммент кнопка
+      const commentBtn = document.createElement('div');
+      commentBtn.className = 'comment-btn';
+      commentBtn.textContent = '💬';
+      commentBtn.onclick = e=>{
+        e.stopPropagation();
+        const comment = prompt('Оставьте комментарий:');
+        if(comment) alert(`Комментарий: ${comment}`);
+      }
+      wrapper.appendChild(commentBtn);
+
       gallery.appendChild(wrapper);
-
-      setTimeout(() => wrapper.classList.add('visible'), index*80);
-
-      wrapper.onclick = () => openModal(index);
+      setTimeout(()=>wrapper.classList.add('visible'),index*80);
+      wrapper.onclick = ()=>openModal(index);
     });
   })
-  .catch(err => console.error(err));
+  .catch(err=>console.error(err));
 
+// Модалка
 function openModal(index){
-  currentIndex = index;
+  currentIndex=index;
   showModalContent();
-  modal.style.display = 'flex';
+  modal.style.display='flex';
 }
-
 function showModalContent(){
-  modalContent.innerHTML = '';
-  const item = mediaItems[currentIndex];
+  modalContent.innerHTML='';
+  const item=mediaItems[currentIndex];
   let clone;
-  if(item.type === 'image'){
-    clone = document.createElement('img');
-    clone.src = item.src;
+  if(item.type==='image'){
+    clone=document.createElement('img'); clone.src=item.src;
   } else {
-    clone = document.createElement('video');
-    clone.src = item.src;
-    clone.poster = item.poster || '';
-    clone.controls = true;
-    clone.autoplay = true;
-    clone.muted = false;
+    clone=document.createElement('video');
+    clone.src=item.src;
+    clone.poster=item.poster||'';
+    clone.controls=true;
+    clone.autoplay=true;
+    clone.muted=false;
   }
   modalContent.appendChild(clone);
 }
 
-prevBtn.onclick = () => {
-  currentIndex = (currentIndex - 1 + mediaItems.length) % mediaItems.length;
-  showModalContent();
-}
-nextBtn.onclick = () => {
-  currentIndex = (currentIndex + 1) % mediaItems.length;
-  showModalContent();
-}
+// Навигация
+prevBtn.onclick=()=>{currentIndex=(currentIndex-1+mediaItems.length)%mediaItems.length; showModalContent();}
+nextBtn.onclick=()=>{currentIndex=(currentIndex+1)%mediaItems.length; showModalContent();}
 
-document.getElementById('modalClose').onclick = () => {
-  const v = modalContent.querySelector('video');
-  if(v) v.pause();
-  modal.style.display = 'none';
-  modalContent.innerHTML = '';
+// Закрытие
+document.getElementById('modalClose').onclick=()=>{
+  const v=modalContent.querySelector('video');
+  if(v)v.pause();
+  modal.style.display='none';
+  modalContent.innerHTML='';
 };
+modal.onclick=e=>{if(e.target===modal) document.getElementById('modalClose').onclick();}
 
-modal.onclick = e => {
-  if(e.target === modal) document.getElementById('modalClose').onclick();
-};
-
-// свайпы
-let startX = 0;
-modalContent.addEventListener('touchstart', e => startX = e.touches[0].clientX);
-modalContent.addEventListener('touchend', e => {
-  let endX = e.changedTouches[0].clientX;
-  if(endX - startX > 50) prevBtn.onclick();
-  else if(startX - endX > 50) nextBtn.onclick();
+// Свайпы
+let startX=0;
+modalContent.addEventListener('touchstart',e=>startX=e.touches[0].clientX);
+modalContent.addEventListener('touchend',e=>{
+  let endX=e.changedTouches[0].clientX;
+  if(endX-startX>50) prevBtn.onclick();
+  else if(startX-endX>50) nextBtn.onclick();
 });
+
+// Сезонные эффекты
+function spawnSeasonal(){
+  const el=document.createElement('div');
+  el.className='falling';
+  const month=new Date().getMonth();
+  if(month===11||month===0||month===1) el.textContent='❄'; // Зима
+  else if(month>=2&&month<=4) el.textContent='🌸'; // Весна
+  else if(month>=5&&month<=7) el.textContent='🦋'; // Лето
+  else el.textContent='🍂'; // Осень
+  el.style.left=Math.random()*window.innerWidth+'px';
+  el.style.fontSize=(12+Math.random()*24)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),8000);
+}
+setInterval(spawnSeasonal,400); // каждые 0.4 секунды
 </script>
 
 </body>
