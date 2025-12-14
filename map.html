@@ -3,80 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Карта воспоминания</title>
+<title>Карта воспоминаний</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css"/>
 <style>
 body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(180deg, #0a1f3f, #1e3d7b, #4fa3ff);
-    color: white;
-    text-align: center;
-    overflow-x: hidden;
-    position: relative;
+    margin:0; padding:0;
+    font-family:'Arial',sans-serif;
+    background:linear-gradient(180deg,#0a1f3f,#1e3d7b,#4fa3ff);
+    color:white; text-align:center;
 }
-header { padding: 40px 20px; font-size: 32px; font-weight: bold; letter-spacing: 2px; }
-#map { width: 100%; height: 80vh; border-radius: 16px; margin: 20px auto; max-width: 900px; box-shadow: 0 0 20px rgba(0,0,0,0.4); }
-.memories-btn {
-    display: inline-block;
-    margin: 15px auto;
-    padding: 14px 26px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(6px);
-    border-radius: 12px;
-    font-size: 18px;
-    color: white;
-    text-decoration: none;
-    transition: 0.3s;
+header { padding:2rem 0; font-size:2rem; font-weight:bold; }
+#map { width:100%; height:80vh; max-width:900px; margin:20px auto; border-radius:16px; box-shadow:0 0 20px rgba(0,0,0,0.4);}
+.back-btn { display:inline-block; margin:10px 0; padding:10px 20px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); border-radius:12px; color:white; text-decoration:none; transition:0.3s; }
+.back-btn:hover { background:rgba(255,255,255,0.25); }
+
+.modal {
+    display:none; position:fixed; z-index:1000;
+    left:0; top:0; width:100vw; height:100vh;
+    background:rgba(0,0,0,0.95); justify-content:center; align-items:center;
 }
-.memories-btn:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); }
-.popup-album img { width: 100px; margin: 2px; cursor: pointer; border-radius: 8px; }
+.modal-content { max-width:90%; max-height:90%; display:flex; justify-content:center; align-items:center; position:relative; }
+.modal-content img, .modal-content video { max-width:100%; max-height:100%; object-fit:contain; cursor:pointer; border-radius:12px; }
+.modal-close { position:absolute; top:15px; right:15px; font-size:2rem; color:white; cursor:pointer; z-index:10; }
 </style>
 </head>
 <body>
 
-<header>Карта воспоминания 💙</header>
+<header>Карта воспоминаний 💙</header>
+<a href="index.html" class="back-btn">← Главная</a>
 <div id="map"></div>
-<a href="index.html" class="memories-btn">Назад на главную</a>
+
+<div class="modal" id="modal">
+    <span class="modal-close" id="modalClose">&times;</span>
+    <div class="modal-content" id="modalContent"></div>
+</div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
 <script>
-// Инициализация карты
-const map = L.map('map').setView([52.4064, 16.9252], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+const map = L.map('map').setView([52.4064,16.9252],6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'&copy; OpenStreetMap contributors'
+}).addTo(map);
 
-// Данные меток
-const locations = [
-    { coords: [52.388425,16.944808], photos: ['photos/1.jpg'], title: 'Фото 1' },
-    { coords: [52.391342,16.948103], photos: ['photos/2.jpg'], title: 'Фото 2' },
-    { coords: [52.272950,8.059461], photos: ['photos/3.jpg'], title: 'Фото 3' },
-    { coords: [52.274611,8.079486], photos: ['photos/5.jpg','photos/6.jpg'], title: 'Фото 5-6' },
-    { coords: [52.274267,8.049586], photos: ['photos/7.jpg'], title: 'Фото 7' },
-    { coords: [50.940947,6.957831], photos: ['photos/9.jpg'], title: 'Фото 9' },
-    { coords: [50.940967,6.957828], photos: ['photos/10.jpg'], title: 'Фото 10' },
-    { coords: [52.273578,8.050144], photos: ['photos/11.jpg','photos/22.jpg'], title: 'Фото 11,22' },
-    { coords: [52.271286,8.046617], photos: ['photos/23.jpg'], title: 'Фото 23' },
-    { coords: [52.266603,8.112850], photos: ['photos/24.jpg'], title: 'Фото 24' },
-    { coords: [52.308089,7.991075], photos: ['photos/25.jpg'], title: 'Фото 25' },
-    { coords: [52.521422,11.492242], photos: ['photos/26.jpg'], title: 'Фото 26' },
-    { coords: [52.388344,16.945019], photos: ['photos/27.jpg','photos/28.jpg','photos/29.jpg','photos/30.jpg'], title: 'Фото 27-30' },
-    { coords: [52.274569,8.079481], photos: ['photos/31.jpg','photos/32.jpg','photos/33.jpg','photos/34.jpg'], title: 'Фото 31-34' },
-    { coords: [52.382872,16.927542], photos: ['photos/16.jpg'], title: 'Фото 16' },
-    { coords: [52.382211,16.956908], photos: ['photos/21.jpg'], title: 'Фото 21' }
-];
+const modal = document.getElementById('modal');
+const modalContent = document.getElementById('modalContent');
+const modalClose = document.getElementById('modalClose');
 
-locations.forEach(loc => {
-    let popupContent = `<div class="popup-album">`;
-    loc.photos.forEach(photo => {
-        popupContent += `<a href="${photo}" data-lightbox="album-${loc.title}" data-title="${loc.title}"><img src="${photo}" alt="${loc.title}"></a>`;
+let mediaItems = [];
+
+// Загружаем JSON с медиа
+fetch('data/media.json')
+  .then(r=>r.json())
+  .then(items=>{
+    mediaItems = items;
+
+    // Группируем по координатам
+    const grouped = {};
+    items.forEach(item=>{
+      if(!item.coords) return; // пропустить медиа без координат
+      const key = item.coords.join(',');
+      if(!grouped[key]) grouped[key]=[];
+      grouped[key].push(item);
     });
-    popupContent += `</div>`;
-    L.marker(loc.coords).addTo(map).bindPopup(popupContent);
-});
+
+    // Добавляем метки на карту
+    Object.keys(grouped).forEach(key=>{
+      const coords = key.split(',').map(Number);
+      const photos = grouped[key];
+      L.marker(coords).addTo(map).on('click', ()=>openModalGallery(photos));
+    });
+  });
+
+// Открытие модалки для группы фото/видео
+function openModalGallery(photos){
+  modal.style.display='flex';
+  modalContent.innerHTML='';
+  let current = 0;
+
+  function showPhoto(index){
+    modalContent.innerHTML='';
+    const p = photos[index];
+    if(p.type==='image'){
+      const img = document.createElement('img');
+      img.src=p.src;
+      modalContent.appendChild(img);
+    } else if(p.type==='video'){
+      const vid = document.createElement('video');
+      vid.src=p.src;
+      vid.controls=true;
+      vid.autoplay=true;
+      vid.playsInline=true;
+      modalContent.appendChild(vid);
+    }
+  }
+
+  showPhoto(current);
+
+  // Листаем альбом кликом
+  modalContent.onclick = ()=>{
+    current = (current+1)%photos.length;
+    showPhoto(current);
+  }
+}
+
+// Закрытие модалки
+modalClose.onclick = ()=>{
+  modal.style.display='none';
+  modalContent.innerHTML='';
+};
+modal.onclick = e=>{ if(e.target===modal) modalClose.onclick(); }
 </script>
 
 </body>
