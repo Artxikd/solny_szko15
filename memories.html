@@ -54,12 +54,7 @@ header h1 { font-size: 2.5rem; margin:0; letter-spacing:2px; }
 .back-btn:hover { background:rgba(255,255,255,0.25); }
 
 /* Всплывающие сердечки при долгом удержании */
-.long-tap-heart {
-    position: absolute;
-    font-size: 24px;
-    animation: fly 1.5s ease-out forwards;
-    pointer-events: none;
-}
+.long-tap-heart { position: absolute; font-size: 24px; animation: fly 1.5s ease-out forwards; pointer-events: none; }
 
 /* Leaflet карта */
 #map { height:300px; max-width:1000px; margin:20px auto; border-radius:12px; }
@@ -164,27 +159,61 @@ fetch('data/media.json')
   .catch(e=>console.error(e));
 
 // Модалка с эффектом увеличения
-function openModal(i){ currentIndex=i; showModal(); modal.style.display='flex'; }
+let currentSwipeIndexes = [];
+let swipePos = 0;
+
+function openModal(i){
+  currentIndex=i;
+  currentSwipeIndexes = []; // сброс для обычной галереи
+  swipePos = 0;
+  showModal();
+  modal.style.display='flex';
+}
+
 function showModal(){
   modalContent.innerHTML='';
-  const item=mediaItems[currentIndex];
-  let clone=item.type==='image'? document.createElement('img') : document.createElement('video');
-  clone.src=item.src;
-  if(item.type==='video'){ clone.poster=item.poster||''; clone.controls=true; clone.autoplay=true; clone.muted=false; }
+  const item = mediaItems[currentIndex];
+  if(!item.src){
+      const placeholder = document.createElement('div');
+      placeholder.style.width='100%'; placeholder.style.height='100%';
+      placeholder.style.display='flex'; placeholder.style.alignItems='center'; placeholder.style.justifyContent='center';
+      placeholder.style.color='white'; placeholder.style.fontSize='20px';
+      placeholder.textContent='Нет фото/видео 💔';
+      modalContent.appendChild(placeholder);
+      return;
+  }
+
+  let clone;
+  if(item.type==='image'){
+      clone = document.createElement('img');
+      clone.src = item.src;
+  } else {
+      clone = document.createElement('video');
+      clone.src = item.src;
+      clone.poster = item.poster || '';
+      clone.controls = true;
+      clone.autoplay = true;
+      clone.muted = true;
+      clone.playsInline = true;
+      clone.preload = 'metadata';
+      clone.oncanplay = ()=>clone.play();
+  }
+
   modalContent.appendChild(clone);
   requestAnimationFrame(()=>{ clone.style.transform='scale(1)'; });
 }
 
 // Навигация
 function slide(direction){
-  modalContent.style.transition='transform 0.4s ease';
-  modalContent.style.transform=`translateX(${direction*100}%)`;
-  setTimeout(()=>{
-    currentIndex=(currentIndex+direction+mediaItems.length)%mediaItems.length;
-    showModal();
-    modalContent.style.transition='none';
-  },400);
+  if(currentSwipeIndexes.length){
+    swipePos = (swipePos + direction + currentSwipeIndexes.length) % currentSwipeIndexes.length;
+    currentIndex = currentSwipeIndexes[swipePos];
+  } else {
+    currentIndex = (currentIndex + direction + mediaItems.length) % mediaItems.length;
+  }
+  showModal();
 }
+
 prevBtn.onclick=()=>slide(-1);
 nextBtn.onclick=()=>slide(1);
 
@@ -192,6 +221,8 @@ nextBtn.onclick=()=>slide(1);
 document.getElementById('modalClose').onclick=()=>{
   const v=modalContent.querySelector('video'); if(v) v.pause();
   modal.style.display='none'; modalContent.innerHTML='';
+  currentSwipeIndexes = [];
+  swipePos = 0;
 };
 modal.onclick=e=>{if(e.target===modal) document.getElementById('modalClose').onclick();}
 
@@ -222,6 +253,45 @@ const geoData = [
   {index:15, lat:52.279000, lng:8.05},
   {index:16, lat:52.382872, lng:16.927542},
   {index:20, lat:52.279000, lng:8.05},
+  {index:21, lat:52.382211, lng:16.956908},
+  {index:22, lat:52.273578, lng:8.050144},
+  {index:23, lat:52.271286, lng:8.046617},
+  {index:24, lat:52.266603, lng:8.112850},
+  {index:25, lat:52.308089, lng:7.991075},
+  {index:26, lat:52.521422, lng:11.492242},
+  {index:27, lat:52.388344, lng:16.945019},
+  {index:28, lat:52.388344, lng:16.945019},
+  {index:29, lat:52.388344, lng:16.945019},
+  {index:30, lat:52.388344, lng:16.945019},
+  {index:31, lat:52.274569, lng:8.079481},
+  {index:32, lat:52.274569, lng:8.079481},
+  {index:33, lat:52.274569, lng:8.079481},
+  {index:34, lat:52.274569, lng:8.079481},
+];
+
+// Группировка близких точек (~20 м)
+const grouped = {};
+geoData.forEach(p=>{
+  const key = p.lat.toFixed(4)+'_'+p.lng.toFixed(4);
+  if(!grouped[key]) grouped[key]=[];
+  grouped[key].push(p.index);
+});
+
+// Добавление маркеров
+for(const key in grouped){
+  const [lat,lng] = key.split('_').map(Number);
+  const marker = L.marker([lat,lng]).addTo(map);
+  marker.on('click', ()=>{
+    const indexes = grouped[key];
+    currentSwipeIndexes = indexes;
+    swipePos = 0;
+    openModal(indexes[0]);
+  });
+}
+</script>
+
+</body>
+</html>lat:52.279000, lng:8.05},
   {index:21, lat:52.382211, lng:16.956908},
   {index:22, lat:52.273578, lng:8.050144},
   {index:23, lat:52.271286, lng:8.046617},
