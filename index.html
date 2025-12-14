@@ -16,8 +16,6 @@ body {
     overflow-x: hidden;
     position: relative;
 }
-
-/* Сердечки при клике */
 .heart {
     position: fixed;
     font-size: 20px;
@@ -28,39 +26,10 @@ body {
     0% { transform: translateY(0) scale(1); opacity: 1; }
     100% { transform: translateY(-120px) scale(1.6); opacity: 0; }
 }
-
-header {
-    padding: 40px 20px;
-    font-size: 32px;
-    font-weight: bold;
-    letter-spacing: 2px;
-}
-
-/* Видео */
-.video-container {
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 0 20px rgba(0,0,0,0.4);
-    cursor: pointer;
-}
-.video-container video {
-    width: 100%;
-    display: block;
-    border-radius: 12px;
-}
-
-/* Текст */
-.text-block {
-    margin-top: 30px;
-    font-size: 20px;
-    padding: 0 20px;
-    line-height: 1.5;
-}
-
-/* Кнопка воспоминаний */
+header { padding: 40px 20px; font-size: 32px; font-weight: bold; letter-spacing: 2px; }
+.video-container { width: 100%; max-width: 500px; margin: 0 auto; border-radius: 16px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.4); cursor: pointer; }
+.video-container video { width: 100%; display: block; border-radius: 12px; }
+.text-block { margin-top: 30px; font-size: 20px; padding: 0 20px; line-height: 1.5; }
 .memories-btn {
     margin-top: 35px;
     display: inline-block;
@@ -74,44 +43,27 @@ header {
     text-decoration: none;
     transition: 0.3s;
 }
-.memories-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.05);
-}
-
-/* Таймер */
-#timer {
-    margin-top: 15px;
-    font-size: 18px;
-    opacity: 0.85;
-}
-
-footer {
-    margin-top: 50px;
-    padding: 20px;
-    font-size: 14px;
-    opacity: 0.7;
-}
+.memories-btn:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); }
+#timer { margin-top: 15px; font-size: 18px; opacity: 0.85; }
+footer { margin-top: 50px; padding: 20px; font-size: 14px; opacity: 0.7; }
 </style>
 </head>
 <body>
 
 <header>Дубаянец 👺</header>
 
-<!-- Видео с тапом -->
 <div class="video-container" onclick="playVideo()">
     <video id="mainVideo" muted playsinline preload="metadata" poster="photos/photo1.jpg">
         <source src="video.mp4" type="video/mp4">
     </video>
 </div>
 
-<div class="text-block">
-    Ты — лось. Это для тебя 💙
-</div>
+<div class="text-block">Ты — лось. Это для тебя 💙</div>
 
 <div id="timer"></div>
 
 <a href="memories.html" class="memories-btn">Наши воспоминания 💙</a>
+<a href="map.html" class="memories-btn">Карта воспоминания 💙</a>
 
 <footer>Сделано с любовью 💙</footer>
 
