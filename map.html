@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Карта воспоминания</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css"/>
+  <style>
+    #map { height: 100vh; }
+    .popup-album img { width: 100px; margin: 2px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
+  <script>
+    const map = L.map('map').setView([52.4064, 16.9252], 6); // центр Европы
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Данные для меток
+    const locations = [
+      { coords: [52.388425,16.944808], photos: ['photos/1.jpg'], title: 'Фото 1' },
+      { coords: [52.391342,16.948103], photos: ['photos/2.jpg'], title: 'Фото 2' },
+      { coords: [52.272950,8.059461], photos: ['photos/3.jpg'], title: 'Фото 3' },
+      { coords: [52.274611,8.079486], photos: ['photos/5.jpg','photos/6.jpg'], title: 'Фото 5-6' },
+      { coords: [52.274267,8.049586], photos: ['photos/7.jpg'], title: 'Фото 7' },
+      { coords: [50.940947,6.957831], photos: ['photos/9.jpg'], title: 'Фото 9' },
+      { coords: [50.940967,6.957828], photos: ['photos/10.jpg'], title: 'Фото 10' },
+      { coords: [52.273578,8.050144], photos: ['photos/11.jpg','photos/22.jpg'], title: 'Фото 11,22' },
+      { coords: [52.271286,8.046617], photos: ['photos/23.jpg'], title: 'Фото 23' },
+      { coords: [52.266603,8.112850], photos: ['photos/24.jpg'], title: 'Фото 24' },
+      { coords: [52.308089,7.991075], photos: ['photos/25.jpg'], title: 'Фото 25' },
+      { coords: [52.521422,11.492242], photos: ['photos/26.jpg'], title: 'Фото 26' },
+      { coords: [52.388344,16.945019], photos: ['photos/27.jpg','photos/28.jpg','photos/29.jpg','photos/30.jpg'], title: 'Фото 27-30' },
+      { coords: [52.274569,8.079481], photos: ['photos/31.jpg','photos/32.jpg','photos/33.jpg','photos/34.jpg'], title: 'Фото 31-34' },
+      { coords: [52.382872,16.927542], photos: ['photos/16.jpg'], title: 'Фото 16' },
+      { coords: [52.382211,16.956908], photos: ['photos/21.jpg'], title: 'Фото 21' }
+    ];
+
+    locations.forEach(loc => {
+      let popupContent = `<div class="popup-album">`;
+      loc.photos.forEach((photo, index) => {
+        popupContent += `<a href="${photo}" data-lightbox="album-${loc.title}" data-title="${loc.title}"><img src="${photo}" alt="${loc.title}"></a>`;
+      });
+      popupContent += `</div>`;
+      L.marker(loc.coords).addTo(map).bindPopup(popupContent);
+    });
+  </script>
+</body>
+</html>
