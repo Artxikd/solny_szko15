@@ -36,7 +36,7 @@ header h1 { font-size: 2.5rem; margin:0; letter-spacing:2px; }
 /* Модалка */
 .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; overflow:hidden; }
 .modal-content { max-width:100%; max-height:100%; width:100%; height:100%; display:flex; justify-content:center; align-items:center; position:relative; transition:transform 0.4s ease; }
-.modal-content img, .modal-content video { max-width:100%; max-height:100%; width:auto; height:auto; }
+.modal-content img, .modal-content video { max-width:100%; max-height:100%; width:auto; height:auto; transform:scale(0); transition: transform 0.5s ease; }
 
 /* Кнопки навигации */
 .nav-btn { position:absolute; top:50%; transform:translateY(-50%); font-size:2.5rem; color:white; background:rgba(0,0,0,0.2); border:none; padding:8px 12px; cursor:pointer; border-radius:8px; z-index:10; }
@@ -49,6 +49,14 @@ header h1 { font-size: 2.5rem; margin:0; letter-spacing:2px; }
 /* Кнопка возврата */
 .back-btn { display:inline-block; margin:10px 0; padding:8px 14px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); border-radius:12px; color:white; text-decoration:none; font-size:14px; transition:0.3s; }
 .back-btn:hover { background:rgba(255,255,255,0.25); }
+
+/* Всплывающие сердечки при долгом удержании */
+.long-tap-heart {
+    position: absolute;
+    font-size: 24px;
+    animation: fly 1.5s ease-out forwards;
+    pointer-events: none;
+}
 </style>
 </head>
 <body>
@@ -72,7 +80,6 @@ const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 let mediaItems=[], currentIndex=0;
 
-// Лайки и комментарии
 let storedLikes = JSON.parse(localStorage.getItem('likes')||'{}');
 let storedComments = JSON.parse(localStorage.getItem('comments')||'{}');
 
@@ -125,6 +132,21 @@ fetch('data/media.json')
       };
       wrapper.appendChild(commentBtn);
 
+      // Секретный эффект при долгом удержании
+      let longTapTimer;
+      wrapper.addEventListener('touchstart', e => {
+        longTapTimer = setTimeout(()=>{
+          const heart = document.createElement('div');
+          heart.className = 'long-tap-heart';
+          heart.textContent = '💖';
+          heart.style.left = (e.touches[0].clientX-12)+'px';
+          heart.style.top = (e.touches[0].clientY-12)+'px';
+          document.body.appendChild(heart);
+          setTimeout(()=>heart.remove(),1500);
+        },600); // удержание 0.6s
+      });
+      wrapper.addEventListener('touchend', ()=> clearTimeout(longTapTimer));
+
       gallery.appendChild(wrapper);
       setTimeout(()=>wrapper.classList.add('visible'), i*80);
       wrapper.onclick=()=>openModal(i);
@@ -132,7 +154,7 @@ fetch('data/media.json')
   })
   .catch(e=>console.error(e));
 
-// Модалка
+// Модалка с эффектом увеличения
 function openModal(i){ currentIndex=i; showModal(); modal.style.display='flex'; }
 function showModal(){
   modalContent.innerHTML='';
@@ -141,7 +163,7 @@ function showModal(){
   clone.src=item.src;
   if(item.type==='video'){ clone.poster=item.poster||''; clone.controls=true; clone.autoplay=true; clone.muted=false; }
   modalContent.appendChild(clone);
-  modalContent.style.transform='translateX(0)';
+  requestAnimationFrame(()=>{ clone.style.transform='scale(1)'; }); // плавное увеличение
 }
 
 // Навигация
