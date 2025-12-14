@@ -197,30 +197,4 @@ modalContent.addEventListener('touchend',e=>{
 </script>
 
 </body>
-</html>69, lng:8.079481},{index:32, lat:52.274569, lng:8.079481},
-  {index:33, lat:52.274569, lng:8.079481},{index:34, lat:52.274569, lng:8.079481},
-];
-
-// Группировка близких точек (~20 м)
-const grouped = {};
-geoData.forEach(p=>{
-  const key = p.lat.toFixed(4)+'_'+p.lng.toFixed(4);
-  if(!grouped[key]) grouped[key]=[];
-  grouped[key].push(p.index);
-});
-
-// Добавление маркеров
-for(const key in grouped){
-  const [lat,lng] = key.split('_').map(Number);
-  const marker = L.marker([lat,lng]).addTo(map);
-  marker.on('click', ()=>{
-    const indexes = grouped[key];
-    currentIndex = indexes[0];
-    showModal();
-    modal.style.display='flex';
-  });
-}
-</script>
-
-</body>
 </html>
