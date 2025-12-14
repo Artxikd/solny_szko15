@@ -3,34 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Карта воспоминаний</title>
+<title>Наши воспоминания</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
-body {
-    margin:0; padding:0;
-    font-family:'Arial',sans-serif;
-    background:linear-gradient(180deg,#0a1f3f,#1e3d7b,#4fa3ff);
-    color:white; text-align:center;
-}
-header { padding:2rem 0; font-size:2rem; font-weight:bold; }
-#map { width:100%; height:80vh; max-width:900px; margin:20px auto; border-radius:16px; box-shadow:0 0 20px rgba(0,0,0,0.4);}
-.back-btn { display:inline-block; margin:10px 0; padding:10px 20px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); border-radius:12px; color:white; text-decoration:none; transition:0.3s; }
-.back-btn:hover { background:rgba(255,255,255,0.25); }
+body {margin:0; padding:0; font-family:'Arial', sans-serif; background:linear-gradient(180deg,#0a1f3f,#1e3d7b,#4fa3ff); color:white; text-align:center;}
+header {padding:2rem 0; font-size:2.5rem; font-weight:bold;}
+.gallery {display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; max-width:1000px; margin:10px auto; padding:0 5px;}
+.gallery-item {position:relative; border-radius:12px; overflow:hidden; cursor:pointer; opacity:0; transform:translateY(20px); transition:opacity 0.6s ease, transform 0.6s ease;}
+.gallery-item.visible {opacity:1; transform:translateY(0);}
+.gallery-item img, .gallery-item video {width:100%; height:100%; object-fit:cover; display:block;}
+.gallery-item.video::after {content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.3);}
+.gallery-item.video::before {content:''; position:absolute; top:50%; left:50%; transform:translate(-40%,-50%); width:0; height:0; border-left:18px solid white; border-top:12px solid transparent; border-bottom:12px solid transparent;}
 
-.modal {
-    display:none; position:fixed; z-index:1000;
-    left:0; top:0; width:100vw; height:100vh;
-    background:rgba(0,0,0,0.95); justify-content:center; align-items:center;
-}
-.modal-content { max-width:90%; max-height:90%; display:flex; justify-content:center; align-items:center; position:relative; }
-.modal-content img, .modal-content video { max-width:100%; max-height:100%; object-fit:contain; cursor:pointer; border-radius:12px; }
-.modal-close { position:absolute; top:15px; right:15px; font-size:2rem; color:white; cursor:pointer; z-index:10; }
+.like-btn, .comment-btn {position:absolute; bottom:6px; font-size:1.2rem; background:rgba(0,0,0,0.3); padding:3px 6px; border-radius:6px; color:white; cursor:pointer; user-select:none;}
+.like-btn {left:6px;}
+.comment-btn {right:6px;}
+.pop {animation: pop 0.3s ease;}
+@keyframes pop {0%{transform:scale(1);}50%{transform:scale(1.5);}100%{transform:scale(1);}}
+.comment-feedback {position:absolute; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.5); padding:4px 10px; border-radius:6px; font-size:14px; animation: commentPop 1s ease forwards; pointer-events:none;}
+@keyframes commentPop {0%{opacity:0; transform:translateY(10px);}50%{opacity:1; transform:translateY(-5px);}100%{opacity:0; transform:translateY(-15px);}}
+
+.modal {display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); justify-content:center; align-items:center;}
+.modal-content {max-width:90%; max-height:90%; display:flex; justify-content:center; align-items:center; position:relative;}
+.modal-content img, .modal-content video {max-width:100%; max-height:100%; object-fit:contain; cursor:pointer; border-radius:12px;}
+.modal-close {position:absolute; top:15px; right:15px; font-size:2rem; color:white; cursor:pointer; z-index:10;}
+.back-btn {display:inline-block; margin:10px 0; padding:8px 14px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); border-radius:12px; color:white; text-decoration:none; transition:0.3s;}
+.back-btn:hover {background:rgba(255,255,255,0.25);}
+
+#map {width:90%; max-width:900px; height:400px; margin:20px auto; border-radius:16px; box-shadow:0 0 20px rgba(0,0,0,0.4);}
 </style>
 </head>
 <body>
 
-<header>Карта воспоминаний 💙</header>
+<header>Наши воспоминания 💙</header>
 <a href="index.html" class="back-btn">← Главная</a>
+
+<div class="gallery" id="gallery"></div>
+
+<h2>Карта воспоминаний 💙</h2>
 <div id="map"></div>
 
 <div class="modal" id="modal">
@@ -40,33 +50,49 @@ header { padding:2rem 0; font-size:2rem; font-weight:bold; }
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-const map = L.map('map').setView([52.4064,16.9252],6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    attribution:'&copy; OpenStreetMap contributors'
-}).addTo(map);
-
+const gallery = document.getElementById('gallery');
 const modal = document.getElementById('modal');
 const modalContent = document.getElementById('modalContent');
 const modalClose = document.getElementById('modalClose');
+const mapDiv = document.getElementById('map');
 
 let mediaItems = [];
 
-// Загружаем JSON с медиа
+// Загружаем JSON
 fetch('data/media.json')
   .then(r=>r.json())
   .then(items=>{
     mediaItems = items;
 
+    // === Галерея ===
+    items.forEach((item,i)=>{
+      const wrapper=document.createElement('div');
+      wrapper.className='gallery-item';
+      if(item.type==='video') wrapper.classList.add('video');
+
+      let media = item.type==='image'? document.createElement('img') : document.createElement('video');
+      media.src = item.src;
+      if(item.type==='video'){ media.controls=true; media.autoplay=false; media.playsInline=true; media.preload='metadata'; }
+      wrapper.appendChild(media);
+
+      wrapper.onclick=()=>openModalGallery([item]); // одиночное фото/видео
+      gallery.appendChild(wrapper);
+      setTimeout(()=>wrapper.classList.add('visible'), i*80);
+    });
+
+    // === Карта ===
+    const map = L.map(mapDiv).setView([52.4064,16.9252],6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap contributors' }).addTo(map);
+
     // Группируем по координатам
     const grouped = {};
     items.forEach(item=>{
-      if(!item.coords) return; // пропустить медиа без координат
+      if(!item.coords) return;
       const key = item.coords.join(',');
       if(!grouped[key]) grouped[key]=[];
       grouped[key].push(item);
     });
 
-    // Добавляем метки на карту
     Object.keys(grouped).forEach(key=>{
       const coords = key.split(',').map(Number);
       const photos = grouped[key];
@@ -74,7 +100,7 @@ fetch('data/media.json')
     });
   });
 
-// Открытие модалки для группы фото/видео
+// === Модалка ===
 function openModalGallery(photos){
   modal.style.display='flex';
   modalContent.innerHTML='';
@@ -85,32 +111,27 @@ function openModalGallery(photos){
     const p = photos[index];
     if(p.type==='image'){
       const img = document.createElement('img');
-      img.src=p.src;
+      img.src = p.src;
+      img.onload = ()=>{};
       modalContent.appendChild(img);
-    } else if(p.type==='video'){
+    } else {
       const vid = document.createElement('video');
-      vid.src=p.src;
+      vid.src = p.src;
       vid.controls=true;
-      vid.autoplay=true;
+      vid.autoplay=false;
       vid.playsInline=true;
+      vid.preload='metadata';
+      vid.onloadedmetadata = ()=>{};
       modalContent.appendChild(vid);
     }
   }
 
   showPhoto(current);
-
-  // Листаем альбом кликом
-  modalContent.onclick = ()=>{
-    current = (current+1)%photos.length;
-    showPhoto(current);
-  }
+  modalContent.onclick = ()=>{ current = (current+1)%photos.length; showPhoto(current); }
 }
 
 // Закрытие модалки
-modalClose.onclick = ()=>{
-  modal.style.display='none';
-  modalContent.innerHTML='';
-};
+modalClose.onclick = ()=>{ modal.style.display='none'; modalContent.innerHTML=''; }
 modal.onclick = e=>{ if(e.target===modal) modalClose.onclick(); }
 </script>
 
