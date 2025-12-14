@@ -7,25 +7,23 @@
 <style>
 body {margin:0; padding:0; font-family:'Arial', sans-serif; background:linear-gradient(180deg,#0a1f3f,#1e3d7b,#4fa3ff); color:white; text-align:center;}
 header {padding:2rem 0; font-size:2.5rem; font-weight:bold;}
+h2 {margin-top:2rem;}
 .gallery {display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; max-width:1000px; margin:10px auto; padding:0 5px;}
 .gallery-item {position:relative; border-radius:12px; overflow:hidden; cursor:pointer; opacity:0; transform:translateY(20px); transition:opacity 0.6s ease, transform 0.6s ease;}
 .gallery-item.visible {opacity:1; transform:translateY(0);}
 .gallery-item img {width:100%; height:100%; object-fit:cover; display:block;}
 
-.like-btn, .comment-btn {position:absolute; bottom:6px; font-size:1.2rem; background:rgba(0,0,0,0.3); padding:3px 6px; border-radius:6px; color:white; cursor:pointer; user-select:none;}
-.like-btn {left:6px;}
-.comment-btn {right:6px;}
-.pop {animation: pop 0.3s ease;}
-@keyframes pop {0%{transform:scale(1);}50%{transform:scale(1.5);}100%{transform:scale(1);}}
-.comment-feedback {position:absolute; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.5); padding:4px 10px; border-radius:6px; font-size:14px; animation: commentPop 1s ease forwards; pointer-events:none;}
-@keyframes commentPop {0%{opacity:0; transform:translateY(10px);}50%{opacity:1; transform:translateY(-5px);}100%{opacity:0; transform:translateY(-15px);}}
-
-.modal {display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); justify-content:center; align-items:center;}
-.modal-content {max-width:90%; max-height:90%; display:flex; justify-content:center; align-items:center; position:relative;}
-.modal-content img, .modal-content video {max-width:100%; max-height:100%; object-fit:contain; cursor:pointer; border-radius:12px;}
-.modal-close {position:absolute; top:15px; right:15px; font-size:2rem; color:white; cursor:pointer; z-index:10;}
 .back-btn {display:inline-block; margin:10px 0; padding:8px 14px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); border-radius:12px; color:white; text-decoration:none; transition:0.3s;}
 .back-btn:hover {background:rgba(255,255,255,0.25);}
+
+.modal {display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; flex-direction:column;}
+.modal-content {max-width:90%; max-height:80%; display:flex; justify-content:center; align-items:center; position:relative; transition: transform 0.4s ease;}
+.modal-content img, .modal-content video {max-width:100%; max-height:100%; object-fit:contain; cursor:pointer; border-radius:12px;}
+.modal-close {position:absolute; top:15px; right:15px; font-size:2rem; color:white; cursor:pointer; z-index:10;}
+.nav-btn {position:absolute; top:50%; transform:translateY(-50%); font-size:2.5rem; color:white; background:rgba(0,0,0,0.2); border:none; padding:8px 12px; cursor:pointer; border-radius:8px; z-index:10;}
+#prevBtn {left:5px;}
+#nextBtn {right:5px;}
+.counter {margin-top:10px; font-size:1rem; opacity:0.8;}
 </style>
 </head>
 <body>
@@ -33,22 +31,34 @@ header {padding:2rem 0; font-size:2.5rem; font-weight:bold;}
 <header>Наши воспоминания 💙</header>
 <a href="index.html" class="back-btn">← Главная</a>
 
-<div class="gallery" id="gallery"></div>
+<h2>Фото</h2>
+<div class="gallery" id="photoGallery"></div>
+
+<h2>Видео</h2>
+<div class="gallery" id="videoGallery"></div>
 
 <div class="modal" id="modal">
     <span class="modal-close" id="modalClose">&times;</span>
+    <button class="nav-btn" id="prevBtn">&#10094;</button>
     <div class="modal-content" id="modalContent"></div>
+    <button class="nav-btn" id="nextBtn">&#10095;</button>
+    <div class="counter" id="counter"></div>
 </div>
 
 <script>
-const gallery = document.getElementById('gallery');
+const photoGallery = document.getElementById('photoGallery');
+const videoGallery = document.getElementById('videoGallery');
 const modal = document.getElementById('modal');
 const modalContent = document.getElementById('modalContent');
 const modalClose = document.getElementById('modalClose');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const counter = document.getElementById('counter');
 
 let mediaItems = [];
+let currentIndex = 0;
+let currentAlbum = [];
 
-// Загружаем JSON
 fetch('data/media.json')
   .then(r=>r.json())
   .then(items=>{
@@ -58,56 +68,56 @@ fetch('data/media.json')
       const wrapper = document.createElement('div');
       wrapper.className = 'gallery-item';
 
-      // Для миниатюр: фото или скриншот видео
       const thumb = document.createElement('img');
       if(item.type==='image'){
         thumb.src = item.src;
-      } else { // видео
-        thumb.src = item.poster || 'photos/video_placeholder.jpg'; // плейсхолдер для видео
+        wrapper.onclick = ()=>openModalGallery([item]);
+        photoGallery.appendChild(wrapper);
+      } else {
+        thumb.src = item.poster || 'photos/video_placeholder.jpg';
+        wrapper.onclick = ()=>openModalGallery([item]);
+        videoGallery.appendChild(wrapper);
       }
 
       wrapper.appendChild(thumb);
-      wrapper.onclick = ()=>openModalGallery([item]);
-      gallery.appendChild(wrapper);
-
       setTimeout(()=>wrapper.classList.add('visible'), i*80);
     });
   });
 
 // === Модалка ===
-function openModalGallery(photos){
-  modal.style.display='flex';
-  modalContent.innerHTML='';
-  let current = 0;
-
-  function showMedia(index){
-    modalContent.innerHTML='';
-    const p = photos[index];
-    if(p.type==='image'){
-      const img = document.createElement('img');
-      img.src = p.src;
-      modalContent.appendChild(img);
-    } else {
-      const vid = document.createElement('video');
-      vid.src = p.src;
-      vid.controls = true;
-      vid.autoplay = false;
-      vid.playsInline = true;
-      vid.preload = 'metadata';
-      modalContent.appendChild(vid);
-    }
-  }
-
-  showMedia(current);
-
-  // Листание кликом по модалке
-  modalContent.onclick = ()=>{
-    current = (current+1)%photos.length;
-    showMedia(current);
-  }
+function openModalGallery(album){
+  currentAlbum = album;
+  currentIndex = 0;
+  modal.style.display = 'flex';
+  showMedia(currentIndex);
 }
 
-// Закрытие модалки
+function showMedia(index){
+  modalContent.innerHTML = '';
+  const item = currentAlbum[index];
+
+  if(item.type==='image'){
+    const img = document.createElement('img');
+    img.src = item.src;
+    modalContent.appendChild(img);
+  } else {
+    const vid = document.createElement('video');
+    vid.src = item.src;
+    vid.controls = true;
+    vid.autoplay = false;
+    vid.playsInline = true;
+    vid.preload = 'metadata';
+    modalContent.appendChild(vid);
+  }
+
+  counter.textContent = `${index+1} / ${currentAlbum.length}`;
+}
+
+// Навигация стрелками
+prevBtn.onclick = ()=>{ currentIndex = (currentIndex-1+currentAlbum.length)%currentAlbum.length; showMedia(currentIndex); }
+nextBtn.onclick = ()=>{ currentIndex = (currentIndex+1)%currentAlbum.length; showMedia(currentIndex); }
+
+// Закрытие
 modalClose.onclick = ()=>{ modal.style.display='none'; modalContent.innerHTML=''; }
 modal.onclick = e=>{ if(e.target===modal) modalClose.onclick(); }
 </script>
