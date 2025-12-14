@@ -53,9 +53,6 @@ header h1 { font-size: 2.5rem; margin:0; letter-spacing:2px; }
 .back-btn { display:inline-block; margin:10px 0; padding:8px 14px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); border-radius:12px; color:white; text-decoration:none; font-size:14px; transition:0.3s; }
 .back-btn:hover { background:rgba(255,255,255,0.25); }
 
-/* Всплывающие сердечки при долгом удержании */
-.long-tap-heart { position: absolute; font-size: 24px; animation: fly 1.5s ease-out forwards; pointer-events: none; }
-
 /* Leaflet карта */
 #map { height:300px; max-width:1000px; margin:20px auto; border-radius:12px; }
 </style>
@@ -73,7 +70,6 @@ header h1 { font-size: 2.5rem; margin:0; letter-spacing:2px; }
     <button class="nav-btn" id="nextBtn">&#10095;</button>
 </div>
 
-<!-- Карта Leaflet -->
 <div id="map"></div>
 
 <script>
@@ -136,21 +132,6 @@ fetch('data/media.json')
       };
       wrapper.appendChild(commentBtn);
 
-      // Секретный эффект при долгом удержании
-      let longTapTimer;
-      wrapper.addEventListener('touchstart', e => {
-        longTapTimer = setTimeout(()=>{
-          const heart = document.createElement('div');
-          heart.className = 'long-tap-heart';
-          heart.textContent = '💖';
-          heart.style.left = (e.touches[0].clientX-12)+'px';
-          heart.style.top = (e.touches[0].clientY-12)+'px';
-          document.body.appendChild(heart);
-          setTimeout(()=>heart.remove(),1500);
-        },600);
-      });
-      wrapper.addEventListener('touchend', ()=> clearTimeout(longTapTimer));
-
       gallery.appendChild(wrapper);
       setTimeout(()=>wrapper.classList.add('visible'), i*80);
       wrapper.onclick=()=>openModal(i);
@@ -158,14 +139,8 @@ fetch('data/media.json')
   })
   .catch(e=>console.error(e));
 
-// Модалка с эффектом увеличения
-let currentSwipeIndexes = [];
-let swipePos = 0;
-
 function openModal(i){
   currentIndex=i;
-  currentSwipeIndexes = []; // сброс для обычной галереи
-  swipePos = 0;
   showModal();
   modal.style.display='flex';
 }
@@ -203,34 +178,68 @@ function showModal(){
   requestAnimationFrame(()=>{ clone.style.transform='scale(1)'; });
 }
 
-// Навигация
 function slide(direction){
-  if(currentSwipeIndexes.length){
-    swipePos = (swipePos + direction + currentSwipeIndexes.length) % currentSwipeIndexes.length;
-    currentIndex = currentSwipeIndexes[swipePos];
-  } else {
-    currentIndex = (currentIndex + direction + mediaItems.length) % mediaItems.length;
-  }
+  currentIndex = (currentIndex + direction + mediaItems.length) % mediaItems.length;
   showModal();
 }
 
 prevBtn.onclick=()=>slide(-1);
 nextBtn.onclick=()=>slide(1);
 
-// Закрытие
 document.getElementById('modalClose').onclick=()=>{
   const v=modalContent.querySelector('video'); if(v) v.pause();
   modal.style.display='none'; modalContent.innerHTML='';
-  currentSwipeIndexes = [];
-  swipePos = 0;
 };
+
 modal.onclick=e=>{if(e.target===modal) document.getElementById('modalClose').onclick();}
 
-// Свайпы
 let startX=0;
 modalContent.addEventListener('touchstart',e=>startX=e.touches[0].clientX);
 modalContent.addEventListener('touchend',e=>{
   const endX=e.changedTouches[0].clientX;
+  if(endX-startX>40) slide(-1);
+  else if(startX-endX>40) slide(1);
+});
+
+// Leaflet карта
+const map = L.map('map').setView([52.388,16.944], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution:'&copy; OpenStreetMap contributors' }).addTo(map);
+
+const geoData = [
+  {index:1, lat:52.388425, lng:16.944808},{index:2, lat:52.391342, lng:16.948103},{index:3, lat:52.272950, lng:8.059461},
+  {index:5, lat:52.274611, lng:8.079486},{index:6, lat:52.274611, lng:8.079486},{index:7, lat:52.274267, lng:8.049586},
+  {index:9, lat:50.940947, lng:6.957831},{index:10, lat:50.940967, lng:6.957828},{index:11, lat:52.273578, lng:8.050144},
+  {index:15, lat:52.279000, lng:8.05},{index:16, lat:52.382872, lng:16.927542},{index:20, lat:52.279000, lng:8.05},
+  {index:21, lat:52.382211, lng:16.956908},{index:22, lat:52.273578, lng:8.050144},{index:23, lat:52.271286, lng:8.046617},
+  {index:24, lat:52.266603, lng:8.112850},{index:25, lat:52.308089, lng:7.991075},{index:26, lat:52.521422, lng:11.492242},
+  {index:27, lat:52.388344, lng:16.945019},{index:28, lat:52.388344, lng:16.945019},{index:29, lat:52.388344, lng:16.945019},
+  {index:30, lat:52.388344, lng:16.945019},{index:31, lat:52.274569, lng:8.079481},{index:32, lat:52.274569, lng:8.079481},
+  {index:33, lat:52.274569, lng:8.079481},{index:34, lat:52.274569, lng:8.079481},
+];
+
+// Группировка близких точек (~20 м)
+const grouped = {};
+geoData.forEach(p=>{
+  const key = p.lat.toFixed(4)+'_'+p.lng.toFixed(4);
+  if(!grouped[key]) grouped[key]=[];
+  grouped[key].push(p.index);
+});
+
+// Добавление маркеров
+for(const key in grouped){
+  const [lat,lng] = key.split('_').map(Number);
+  const marker = L.marker([lat,lng]).addTo(map);
+  marker.on('click', ()=>{
+    const indexes = grouped[key];
+    currentIndex = indexes[0];
+    showModal();
+    modal.style.display='flex';
+  });
+}
+</script>
+
+</body>
+</html>angedTouches[0].clientX;
   if(endX-startX>40) slide(-1);
   else if(startX-endX>40) slide(1);
 });
