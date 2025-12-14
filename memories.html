@@ -61,6 +61,18 @@ header h1 {
     display: block;
 }
 
+/* Иконка воспроизведения для видео */
+.gallery-item.video::after {
+    content: '▶';
+    position: absolute;
+    font-size: 3rem;
+    color: rgba(255,255,255,0.8);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
 /* Модалка */
 .modal {
     display: none;
@@ -161,7 +173,6 @@ const nextBtn = document.getElementById('nextBtn');
 let mediaItems = [];
 let currentIndex = 0;
 
-// Загружаем JSON
 fetch('data/media.json')
   .then(res => res.json())
   .then(items => {
@@ -169,6 +180,8 @@ fetch('data/media.json')
     items.forEach((item, index) => {
       const wrapper = document.createElement('div');
       wrapper.className = 'gallery-item';
+      if(item.type === 'video') wrapper.classList.add('video'); // добавляем класс для видео
+
       let media;
       if(item.type === 'image'){
         media = document.createElement('img');
@@ -192,7 +205,6 @@ fetch('data/media.json')
   })
   .catch(err => console.error(err));
 
-// Модалка
 function openModal(index){
   currentIndex = index;
   showModalContent();
@@ -217,7 +229,6 @@ function showModalContent(){
   modalContent.appendChild(clone);
 }
 
-// Кнопки навигации
 prevBtn.onclick = () => {
   currentIndex = (currentIndex - 1 + mediaItems.length) % mediaItems.length;
   showModalContent();
@@ -227,7 +238,6 @@ nextBtn.onclick = () => {
   showModalContent();
 }
 
-// Закрытие модалки
 document.getElementById('modalClose').onclick = () => {
   const v = modalContent.querySelector('video');
   if(v) v.pause();
@@ -239,13 +249,13 @@ modal.onclick = e => {
   if(e.target === modal) document.getElementById('modalClose').onclick();
 };
 
-// Свайпы
+// свайпы
 let startX = 0;
 modalContent.addEventListener('touchstart', e => startX = e.touches[0].clientX);
 modalContent.addEventListener('touchend', e => {
   let endX = e.changedTouches[0].clientX;
-  if(endX - startX > 50) prevBtn.onclick(); // свайп вправо
-  else if(startX - endX > 50) nextBtn.onclick(); // свайп влево
+  if(endX - startX > 50) prevBtn.onclick();
+  else if(startX - endX > 50) nextBtn.onclick();
 });
 </script>
 
