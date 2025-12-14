@@ -70,7 +70,7 @@ header h1 {
     top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.95);
     justify-content: center;
     align-items: center;
 }
@@ -78,6 +78,7 @@ header h1 {
 .modal-content {
     max-width: 90%;
     max-height: 90%;
+    position: relative;
 }
 
 .modal-content img,
@@ -86,6 +87,25 @@ header h1 {
     height: auto;
 }
 
+/* Кнопки навигации */
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 3rem;
+    color: white;
+    background: rgba(0,0,0,0.3);
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 10px;
+    user-select: none;
+}
+
+#prevBtn { left: 10px; }
+#nextBtn { right: 10px; }
+
+/* Закрытие */
 .modal-close {
     position: absolute;
     top: 20px;
@@ -93,6 +113,23 @@ header h1 {
     font-size: 2rem;
     color: white;
     cursor: pointer;
+}
+
+/* Кнопка возврата */
+.back-btn {
+    display: inline-block;
+    margin: 20px 0;
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    transition: 0.3s;
+}
+.back-btn:hover {
+    background: rgba(255,255,255,0.25);
 }
 </style>
 </head>
@@ -103,39 +140,41 @@ header h1 {
     <h1>Наши воспоминания</h1>
 </header>
 
-<!-- ✅ ЕДИНСТВЕННЫЙ БЛОК ГАЛЕРЕИ (ПУСТОЙ, ДЛЯ JSON) -->
+<a href="index.html" class="back-btn">← Главная</a>
+
 <div class="gallery" id="gallery"></div>
 
-<!-- Модальное окно -->
+<!-- Модалка -->
 <div class="modal" id="modal">
     <span class="modal-close" id="modalClose">&times;</span>
+    <button class="nav-btn" id="prevBtn">&#10094;</button>
     <div class="modal-content" id="modalContent"></div>
+    <button class="nav-btn" id="nextBtn">&#10095;</button>
 </div>
 
 <script>
 const gallery = document.getElementById('gallery');
 const modal = document.getElementById('modal');
 const modalContent = document.getElementById('modalContent');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+let mediaItems = [];
+let currentIndex = 0;
 
+// Загружаем JSON
 fetch('data/media.json')
-  .then(res => {
-    if (!res.ok) throw new Error('JSON not found');
-    return res.json();
-  })
+  .then(res => res.json())
   .then(items => {
+    mediaItems = items;
     items.forEach((item, index) => {
       const wrapper = document.createElement('div');
       wrapper.className = 'gallery-item';
-
       let media;
-
-      if (item.type === 'image') {
+      if(item.type === 'image'){
         media = document.createElement('img');
         media.src = item.src;
         media.loading = 'lazy';
-      }
-
-      if (item.type === 'video') {
+      } else if(item.type === 'video'){
         media = document.createElement('video');
         media.src = item.src;
         media.poster = item.poster || '';
@@ -143,44 +182,71 @@ fetch('data/media.json')
         media.playsInline = true;
         media.preload = 'metadata';
       }
-
       wrapper.appendChild(media);
       gallery.appendChild(wrapper);
 
-      setTimeout(() => {
-        wrapper.classList.add('visible');
-      }, index * 80);
+      setTimeout(() => wrapper.classList.add('visible'), index*80);
 
-      wrapper.onclick = () => {
-        const clone = media.cloneNode(true);
-        if (clone.tagName === 'VIDEO') {
-          clone.controls = true;
-          clone.autoplay = true;
-          clone.muted = false;
-        }
-        modalContent.innerHTML = '';
-        modalContent.appendChild(clone);
-        modal.style.display = 'flex';
-      };
+      wrapper.onclick = () => openModal(index);
     });
   })
-  .catch(err => {
-    console.error(err);
-    gallery.innerHTML = '<p>Ошибка загрузки воспоминаний 💔</p>';
-  });
+  .catch(err => console.error(err));
 
+// Модалка
+function openModal(index){
+  currentIndex = index;
+  showModalContent();
+  modal.style.display = 'flex';
+}
+
+function showModalContent(){
+  modalContent.innerHTML = '';
+  const item = mediaItems[currentIndex];
+  let clone;
+  if(item.type === 'image'){
+    clone = document.createElement('img');
+    clone.src = item.src;
+  } else {
+    clone = document.createElement('video');
+    clone.src = item.src;
+    clone.poster = item.poster || '';
+    clone.controls = true;
+    clone.autoplay = true;
+    clone.muted = false;
+  }
+  modalContent.appendChild(clone);
+}
+
+// Кнопки навигации
+prevBtn.onclick = () => {
+  currentIndex = (currentIndex - 1 + mediaItems.length) % mediaItems.length;
+  showModalContent();
+}
+nextBtn.onclick = () => {
+  currentIndex = (currentIndex + 1) % mediaItems.length;
+  showModalContent();
+}
+
+// Закрытие модалки
 document.getElementById('modalClose').onclick = () => {
   const v = modalContent.querySelector('video');
-  if (v) v.pause();
+  if(v) v.pause();
   modal.style.display = 'none';
   modalContent.innerHTML = '';
 };
 
 modal.onclick = e => {
-  if (e.target === modal) {
-    document.getElementById('modalClose').onclick();
-  }
+  if(e.target === modal) document.getElementById('modalClose').onclick();
 };
+
+// Свайпы
+let startX = 0;
+modalContent.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+modalContent.addEventListener('touchend', e => {
+  let endX = e.changedTouches[0].clientX;
+  if(endX - startX > 50) prevBtn.onclick(); // свайп вправо
+  else if(startX - endX > 50) nextBtn.onclick(); // свайп влево
+});
 </script>
 
 </body>
