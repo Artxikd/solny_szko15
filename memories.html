@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Наши воспоминания</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <style>
 body { margin:0; padding:0; font-family:'Arial', sans-serif; background:linear-gradient(180deg,#0a1f3f,#1e3d7b,#4fa3ff); color:white; text-align:center; overflow-x:hidden; position:relative; }
 header { padding: 2rem 0; }
@@ -53,8 +50,13 @@ header h1 { font-size: 2.5rem; margin:0; letter-spacing:2px; }
 .back-btn { display:inline-block; margin:10px 0; padding:8px 14px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); border-radius:12px; color:white; text-decoration:none; font-size:14px; transition:0.3s; }
 .back-btn:hover { background:rgba(255,255,255,0.25); }
 
-/* Leaflet карта */
-#map { height:300px; max-width:1000px; margin:20px auto; border-radius:12px; }
+/* Всплывающие сердечки при долгом удержании */
+.long-tap-heart {
+    position: absolute;
+    font-size: 24px;
+    animation: fly 1.5s ease-out forwards;
+    pointer-events: none;
+}
 </style>
 </head>
 <body>
@@ -69,8 +71,6 @@ header h1 { font-size: 2.5rem; margin:0; letter-spacing:2px; }
     <div class="modal-content" id="modalContent"></div>
     <button class="nav-btn" id="nextBtn">&#10095;</button>
 </div>
-
-<div id="map"></div>
 
 <script>
 const gallery = document.getElementById('gallery');
@@ -132,6 +132,21 @@ fetch('data/media.json')
       };
       wrapper.appendChild(commentBtn);
 
+      // Секретный эффект при долгом удержании
+      let longTapTimer;
+      wrapper.addEventListener('touchstart', e => {
+        longTapTimer = setTimeout(()=>{
+          const heart = document.createElement('div');
+          heart.className = 'long-tap-heart';
+          heart.textContent = '💖';
+          heart.style.left = (e.touches[0].clientX-12)+'px';
+          heart.style.top = (e.touches[0].clientY-12)+'px';
+          document.body.appendChild(heart);
+          setTimeout(()=>heart.remove(),1500);
+        },600); // удержание 0.6s
+      });
+      wrapper.addEventListener('touchend', ()=> clearTimeout(longTapTimer));
+
       gallery.appendChild(wrapper);
       setTimeout(()=>wrapper.classList.add('visible'), i*80);
       wrapper.onclick=()=>openModal(i);
@@ -139,60 +154,39 @@ fetch('data/media.json')
   })
   .catch(e=>console.error(e));
 
-function openModal(i){
-  currentIndex=i;
-  showModal();
-  modal.style.display='flex';
-}
-
+// Модалка с эффектом увеличения
+function openModal(i){ currentIndex=i; showModal(); modal.style.display='flex'; }
 function showModal(){
   modalContent.innerHTML='';
-  const item = mediaItems[currentIndex];
-  if(!item.src){
-      const placeholder = document.createElement('div');
-      placeholder.style.width='100%'; placeholder.style.height='100%';
-      placeholder.style.display='flex'; placeholder.style.alignItems='center'; placeholder.style.justifyContent='center';
-      placeholder.style.color='white'; placeholder.style.fontSize='20px';
-      placeholder.textContent='Нет фото/видео 💔';
-      modalContent.appendChild(placeholder);
-      return;
-  }
-
-  let clone;
-  if(item.type==='image'){
-      clone = document.createElement('img');
-      clone.src = item.src;
-  } else {
-      clone = document.createElement('video');
-      clone.src = item.src;
-      clone.poster = item.poster || '';
-      clone.controls = true;
-      clone.autoplay = true;
-      clone.muted = true;
-      clone.playsInline = true;
-      clone.preload = 'metadata';
-      clone.oncanplay = ()=>clone.play();
-  }
-
+  const item=mediaItems[currentIndex];
+  let clone=item.type==='image'? document.createElement('img') : document.createElement('video');
+  clone.src=item.src;
+  if(item.type==='video'){ clone.poster=item.poster||''; clone.controls=true; clone.autoplay=true; clone.muted=false; }
   modalContent.appendChild(clone);
-  requestAnimationFrame(()=>{ clone.style.transform='scale(1)'; });
+  requestAnimationFrame(()=>{ clone.style.transform='scale(1)'; }); // плавное увеличение
 }
 
+// Навигация
 function slide(direction){
-  currentIndex = (currentIndex + direction + mediaItems.length) % mediaItems.length;
-  showModal();
+  modalContent.style.transition='transform 0.4s ease';
+  modalContent.style.transform=`translateX(${direction*100}%)`;
+  setTimeout(()=>{
+    currentIndex=(currentIndex+direction+mediaItems.length)%mediaItems.length;
+    showModal();
+    modalContent.style.transition='none';
+  },400);
 }
-
 prevBtn.onclick=()=>slide(-1);
 nextBtn.onclick=()=>slide(1);
 
+// Закрытие
 document.getElementById('modalClose').onclick=()=>{
   const v=modalContent.querySelector('video'); if(v) v.pause();
   modal.style.display='none'; modalContent.innerHTML='';
 };
-
 modal.onclick=e=>{if(e.target===modal) document.getElementById('modalClose').onclick();}
 
+// Свайпы
 let startX=0;
 modalContent.addEventListener('touchstart',e=>startX=e.touches[0].clientX);
 modalContent.addEventListener('touchend',e=>{
@@ -200,20 +194,10 @@ modalContent.addEventListener('touchend',e=>{
   if(endX-startX>40) slide(-1);
   else if(startX-endX>40) slide(1);
 });
+</script>
 
-// Leaflet карта
-const map = L.map('map').setView([52.388,16.944], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution:'&copy; OpenStreetMap contributors' }).addTo(map);
-
-const geoData = [
-  {index:1, lat:52.388425, lng:16.944808},{index:2, lat:52.391342, lng:16.948103},{index:3, lat:52.272950, lng:8.059461},
-  {index:5, lat:52.274611, lng:8.079486},{index:6, lat:52.274611, lng:8.079486},{index:7, lat:52.274267, lng:8.049586},
-  {index:9, lat:50.940947, lng:6.957831},{index:10, lat:50.940967, lng:6.957828},{index:11, lat:52.273578, lng:8.050144},
-  {index:15, lat:52.279000, lng:8.05},{index:16, lat:52.382872, lng:16.927542},{index:20, lat:52.279000, lng:8.05},
-  {index:21, lat:52.382211, lng:16.956908},{index:22, lat:52.273578, lng:8.050144},{index:23, lat:52.271286, lng:8.046617},
-  {index:24, lat:52.266603, lng:8.112850},{index:25, lat:52.308089, lng:7.991075},{index:26, lat:52.521422, lng:11.492242},
-  {index:27, lat:52.388344, lng:16.945019},{index:28, lat:52.388344, lng:16.945019},{index:29, lat:52.388344, lng:16.945019},
-  {index:30, lat:52.388344, lng:16.945019},{index:31, lat:52.274569, lng:8.079481},{index:32, lat:52.274569, lng:8.079481},
+</body>
+</html>69, lng:8.079481},{index:32, lat:52.274569, lng:8.079481},
   {index:33, lat:52.274569, lng:8.079481},{index:34, lat:52.274569, lng:8.079481},
 ];
 
